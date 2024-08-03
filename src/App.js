@@ -16,19 +16,19 @@ function App() {
     return tab;
   }
 
-  const emailDetector = async () => {
-    getCurrentTabId()
-    .then((result) =>
-      // console.log(result.id))
-      chrome.scripting.executeScript({target : {tabId : result.id}, files: ["loginScript.js"]}))
-    .then(() => console.log('script injected'));
-  }
+  // const emailDetector = async () => {
+  //   getCurrentTabId()
+  //   .then((result) =>
+  //     // console.log(result.id))
+  //     chrome.scripting.executeScript({target : {tabId : result.id}, files: ["loginScript.js"]}))
+  //   .then(() => console.log('script injected'));
+  // }
 
   return (
     <div className="App">
       <header className="App-header">
-        <Login />
-        <button id="input-4" onClick={emailDetector}>Detect Email</button>
+        <Login getCurrentTabId={getCurrentTabId} />
+        {/* <button id="input-4" onClick={emailDetector}>Detect Email</button> */}
       </header>
     </div>
   );

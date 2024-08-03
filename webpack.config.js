@@ -54,7 +54,7 @@ module.exports = {
                     from: "public",
                 },
                 { from: 'src/components', to: 'components'},
-                { from: 'src/loginScript.js', to: 'loginScript.js' }
+                { from: 'src/scripts', to: 'scripts' }
             ],
         }),
     ],

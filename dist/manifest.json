@@ -7,6 +7,14 @@
     "default_popup": "popup.html",
     "default_icon": "logo192.png"
   },
-  "permissions": ["tabs", "scripting", "activeTab", "storage"
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "permissions": [
+    "tabs",
+    "scripting",
+    "activeTab",
+    "storage",
+    "nativeMessaging"
   ]
 }
