@@ -7,6 +7,6 @@
     "default_popup": "popup.html",
     "default_icon": "logo192.png"
   },
-  "permissions": ["scripting", "activeTab"
+  "permissions": ["tabs", "scripting", "activeTab", "storage"
   ]
 }

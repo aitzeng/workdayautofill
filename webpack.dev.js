@@ -1,7 +1,9 @@
 const path = require('path');
+const webpack = require('webpack');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 module.exports = {
     entry: './src/index.js',
@@ -54,7 +56,10 @@ module.exports = {
                 {
                     from: "public",
                 },
+                { from: 'src/components', to: 'components'},
+                { from: 'src/loginScript.js', to: 'loginScript.js' }
             ],
         }),
+        new NodePolyfillPlugin(),
     ],
 };
