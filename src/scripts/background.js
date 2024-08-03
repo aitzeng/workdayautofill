@@ -12,7 +12,7 @@ let decryptData = async (key, encryptedData) => {
   });
 
   let ivArray = new Uint8Array(result);
-  let decryptedData = await window.crypto.subtle.decrypt({
+  let decryptedData = await crypto.subtle.decrypt({
     name: "AES-GCM", iv: ivArray
   }, key, new Uint8Array(encryptedData));
 
@@ -22,19 +22,21 @@ let decryptData = async (key, encryptedData) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getLoginStorage") {
-    chrome.storage.session.get(['email', 'password', 'key'], async (result) => {
+    chrome.storage.session.get(['email', 'password', 'encryptionKey'], async (result) => {
       try {
-        const key = await window.crypto.subtle.importKey(
+        const encryptedDataArray = new Uint8Array(result.password);
+        // console.log('Length of key:', new Uint8Array(result.key).length)
+        const key = await crypto.subtle.importKey(
           "raw",
-          new Uint8Array(result.key),
-          { name: "AES-GCM", length: 256 },
+          new Uint8Array(result.encryptionKey),
+          { name: "AES-GCM" },
           false,
           ["decrypt"]
         );
 
-        decryptData(key, result.password)
+        decryptData(key, encryptedDataArray)
           .then((decryptedPassword) => {
-            sendResponse({'email': result.email, 'password': decryptedPassword})
+            sendResponse({'email': result.email, 'password': decryptedPassword});
           })
           .catch(error => {
             console.error('Decryption failed:', error);

@@ -1,7 +1,7 @@
 /*global chrome*/
 import { useState, useEffect } from 'react';
 
-function Login({getCurrentTabId}) {
+function Login({ getCurrentTabId }) {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,17 +25,22 @@ function Login({getCurrentTabId}) {
   }
 
   const generateKey = async () => {
-    return await window.crypto.subtle.generateKey({
+    return await crypto.subtle.generateKey({
       name: "AES-GCM",
       length: 256,
     },
-      false,
+      true,
       ["encrypt", "decrypt"])
   };
 
+  const exportKey = async (key) => {
+    const exportedKey = await crypto.subtle.exportKey("raw", key);
+    return new Uint8Array(exportedKey);
+  }
+
   const encryptData = async (key, data) => {
-    const iv = window.crypto.getRandomValues(new Uint8Array(12));
-    chrome.storage.session.set({'iv': Array.from(iv)}, () => {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    chrome.storage.session.set({ 'iv': Array.from(iv) }, () => {
       if (chrome.runtime.lastError) {
         console.error("Error setting IV in session storage:", chrome.runtime.lastError);
       }
@@ -44,7 +49,7 @@ function Login({getCurrentTabId}) {
     const encoder = new TextEncoder();
     const encodedData = encoder.encode(data);
 
-    const encryptedData = await window.crypto.subtle.encrypt({
+    const encryptedData = await crypto.subtle.encrypt({
       name: "AES-GCM", iv: iv
     }, key, encodedData);
 
@@ -54,37 +59,34 @@ function Login({getCurrentTabId}) {
     }
   }
 
-  // const emailDetector = async () => {
-  //   getCurrentTabId()
-  //   .then((result) =>
-  //     // console.log(result.id))
-  //     chrome.scripting.executeScript({target : {tabId : result.id}, files: ["loginScript.js"]}))
-  //   .then(() => console.log('script injected'));
-  // }
-
   const saveHandler = (event) => {
     event.preventDefault();
     generateKey().then((key) => {
-      const data = password;
-      encryptData(key, data).then((result) => {
-        chrome.storage.session.set({ 'email': `${email}` }, () => {
-          console.log('Email is stored')
-        })
-        chrome.storage.session.set({ 'password': result.encryptedData }, () => {
-          console.log('Password is stored')
-        })
-        chrome.storage.session.set({ 'encryptionKey': key}, () => {
-          console.log('Encryption key is stored')
-        })
-      })
-    })
-  }
+      exportKey(key).then((exportedKey) => {
+        const data = password;
+        encryptData(key, data).then((result) => {
+          chrome.storage.session.set({ 'email': `${email}` }, () => {
+            console.log('Email is stored');
+          });
+          chrome.storage.session.set({ 'password': result.encryptedData }, () => {
+            console.log('Password is stored');
+          });
+          chrome.storage.session.set({ 'encryptionKey': Array.from(exportedKey) }, () => {
+            console.log('Encryption key is stored');
+          });
+          chrome.storage.session.set({ 'iv': Array.from(result.iv) }, () => {
+            console.log('IV is stored');
+          });
+        });
+      });
+    });
+  };
 
   const autofillHandler = () => {
     getCurrentTabId()
-    .then((result) =>
-      chrome.scripting.executeScript({target : {tabId : result.id}, files: ["./scripts/loginScript.js"]}))
-    .then(() => console.log('script injected'));
+      .then((result) =>
+        chrome.scripting.executeScript({ target: { tabId: result.id }, files: ["./scripts/loginScript.js"] }))
+      .then(() => console.log('script injected'));
   }
 
   return (
