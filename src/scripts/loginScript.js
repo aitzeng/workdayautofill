@@ -23,10 +23,12 @@
   }
 
   let typeLogin = () => {
-    let emailEntry = document.getElementById('input-4');
-    let passwordEntry = document.getElementById('input-5');
+    let emailEntry = document.querySelector('[data-automation-id="email"]');
+    let passwordEntry = document.querySelector('[data-automation-id="password"]');
     chrome.runtime.sendMessage({action: "getLoginStorage"})
       .then((response) => {
+        emailEntry.value='';
+        passwordEntry.value='';
         mimicTyping(response.email, emailEntry);
         mimicTyping(response.password, passwordEntry);
         // emailEntry.value = response.email; // These can be enabled if you don't want to mimic typing each letter. Just ensure inputEvent is dispatched.
@@ -35,6 +37,10 @@
       })
       .catch((error) => {
         console.error('Error receiving response', error)
+      })
+      .then(() => {
+        let signInButton = document.querySelector('[data-automation-id="click_filter"]')
+        signInButton.click();
       })
   };
 
