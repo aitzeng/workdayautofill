@@ -3,7 +3,7 @@ import './MyInfo.css';
 import { useState, useEffect } from 'react';
 import { listOfCountries, countriesWithCodes } from '../listOfCountries.js';
 
-function MyInfo() {
+function MyInfo({getCurrentTabId}) {
 
   const [previousEmployed, setPreviousEmployed] = useState('');
   const [country, setCountry] = useState('');
@@ -31,6 +31,17 @@ function MyInfo() {
       })
   }
 
+  const autofillSubmitter = () => {
+    getCurrentTabId()
+      .then((result) =>
+        chrome.scripting.executeScript({ target: { tabId: result.id }, files: ["./scripts/myInformationScript.js"] }))
+      .then(() => console.log('myInformationScript injected'));
+    let selector = previousEmployed === 'Yes' ? '[data-uxi-element-id="radio_1"]' : '[data-uxi-element-id="radio_2"]';
+    let previousEmployedButton = document.querySelector(selector);
+
+    previousEmployedButton.click();
+  }
+
   const prevEmployedHandler = (event) => {
     setPreviousEmployed(event.target.value);
     chrome.storage.local.set({ 'prevEmployed': event.target.value });
@@ -43,24 +54,24 @@ function MyInfo() {
 
   const firstNameHandler = (e) => {
     setFirstName(e.target.value);
-    chrome.storage.local.set({'firstName': e.target.value});
+    chrome.storage.local.set({ 'firstName': e.target.value });
   }
 
   const lastNameHandler = (e) => {
     setLastName(e.target.value);
-    chrome.storage.local.set({'lastName': e.target.value});
+    chrome.storage.local.set({ 'lastName': e.target.value });
   }
   const addressHandler = (e) => {
     setAddress(e.target.value);
-    chrome.storage.local.set({'address': e.target.value});
+    chrome.storage.local.set({ 'address': e.target.value });
   }
   const cityHandler = (e) => {
     setCity(e.target.value);
-    chrome.storage.local.set({'city': e.target.value});
+    chrome.storage.local.set({ 'city': e.target.value });
   }
   const postalCodeHandler = (e) => {
     setPostalCode(e.target.value);
-    chrome.storage.local.set({'postalCode': e.target.value});
+    chrome.storage.local.set({ 'postalCode': e.target.value });
   }
 
   const phoneTypeHandler = (e) => {
@@ -70,12 +81,12 @@ function MyInfo() {
 
   const countryCodeHandler = (e) => {
     setCountryCode(e.target.value);
-    chrome.storage.local.set({ 'countryCode': e.target.value});
+    chrome.storage.local.set({ 'countryCode': e.target.value });
   }
 
   const phoneNumberHandler = (e) => {
     setPhoneNumber(e.target.value);
-    chrome.storage.local.set({ 'phoneNumber': e.target.value});
+    chrome.storage.local.set({ 'phoneNumber': e.target.value });
   }
 
   useEffect(() => {
@@ -83,7 +94,8 @@ function MyInfo() {
   }, [])
 
   return (
-    <form>
+    <form onSubmit={autofillSubmitter}>
+      <button type="submit">Auto-fill</button>
       <div>Previously employed at this company?</div>
       <select value={previousEmployed} onChange={prevEmployedHandler}>
         <option value="Yes">Yes</option>

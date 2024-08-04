@@ -24,7 +24,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Login getCurrentTabId={getCurrentTabId}/>} />
-          <Route path="MyInfo" element={<MyInfo />} />
+          <Route path="MyInfo" element={<MyInfo getCurrentTabId={getCurrentTabId}/>} />
         </Route>
       </Routes>
     </HashRouter>

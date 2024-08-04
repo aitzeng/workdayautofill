@@ -86,7 +86,7 @@ function Login({ getCurrentTabId }) {
     getCurrentTabId()
       .then((result) =>
         chrome.scripting.executeScript({ target: { tabId: result.id }, files: ["./scripts/loginScript.js"] }))
-      .then(() => console.log('script injected'));
+      .then(() => console.log('loginScript injected'));
   }
 
   return (
