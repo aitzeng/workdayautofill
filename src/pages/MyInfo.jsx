@@ -1,6 +1,7 @@
 /*global chrome*/
+import './MyInfo.css';
 import { useState, useEffect } from 'react';
-import { listOfCountries } from '../listOfCountries.js';
+import { listOfCountries, countriesWithCodes } from '../listOfCountries.js';
 
 function MyInfo() {
 
@@ -11,9 +12,12 @@ function MyInfo() {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  const [phoneType, setPhoneType] = useState('');
+  const [countryCode, setCountryCode] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const populateExtension = () => {
-    chrome.storage.local.get(["prevEmployed", "country", "firstName", "lastName", "address", "city", "postalCode"])
+    chrome.storage.local.get(["prevEmployed", "country", "firstName", "lastName", "address", "city", "postalCode", "phoneType", "countryCode", "phoneNumber"])
       .then((result) => {
         setPreviousEmployed(result.prevEmployed);
         setCountry(result.country);
@@ -22,6 +26,8 @@ function MyInfo() {
         setAddress(result.address);
         setCity(result.city);
         setPostalCode(result.postalCode);
+        setCountryCode(result.countryCode);
+        setPhoneNumber(result.phoneNumber);
       })
   }
 
@@ -57,6 +63,21 @@ function MyInfo() {
     chrome.storage.local.set({'postalCode': e.target.value});
   }
 
+  const phoneTypeHandler = (e) => {
+    setPhoneType(e.target.value);
+    chrome.storage.local.set({ 'phoneType': e.target.value });
+  }
+
+  const countryCodeHandler = (e) => {
+    setCountryCode(e.target.value);
+    chrome.storage.local.set({ 'countryCode': e.target.value});
+  }
+
+  const phoneNumberHandler = (e) => {
+    setPhoneNumber(e.target.value);
+    chrome.storage.local.set({ 'phoneNumber': e.target.value});
+  }
+
   useEffect(() => {
     populateExtension()
   }, [])
@@ -84,6 +105,19 @@ function MyInfo() {
       <input type="text" value={city} onChange={cityHandler} ></input>
       <div>Postal Code</div>
       <input type="text" value={postalCode} onChange={postalCodeHandler} ></input>
+      <div>Phone Device Type</div>
+      <select value={phoneType} onChange={phoneTypeHandler}>
+        <option value="Landline">Landline</option>
+        <option value="Mobile">Mobile</option>
+      </select>
+      <div>Country Phone Code</div>
+      <select value={countryCode} onChange={countryCodeHandler}>
+        {countriesWithCodes.map((countryCode) => {
+          return <option key={countryCode} value={countryCode}>{countryCode}</option>;
+        })}
+      </select>
+      <div>Phone Number</div>
+      <input type="text" value={phoneNumber} onChange={phoneNumberHandler} ></input>
     </form>
   )
 }
