@@ -11,19 +11,21 @@ function MyInfo({getCurrentTabId}) {
   const [lastName, setLastName] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
+  const [region, setRegion] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [phoneType, setPhoneType] = useState('');
   const [countryCode, setCountryCode] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const populateExtension = () => {
-    chrome.storage.local.get(["prevEmployed", "country", "firstName", "lastName", "address", "city", "postalCode", "phoneType", "countryCode", "phoneNumber"])
+    chrome.storage.local.get(["prevEmployed", "country", "firstName", "lastName", "address", "city", "region", "postalCode", "phoneType", "countryCode", "phoneNumber"])
       .then((result) => {
         setPreviousEmployed(result.prevEmployed);
         setCountry(result.country);
         setFirstName(result.firstName);
         setLastName(result.lastName);
         setAddress(result.address);
+        setRegion(result.region);
         setCity(result.city);
         setPostalCode(result.postalCode);
         setCountryCode(result.countryCode);
@@ -64,6 +66,10 @@ function MyInfo({getCurrentTabId}) {
   const cityHandler = (e) => {
     setCity(e.target.value);
     chrome.storage.local.set({ 'city': e.target.value });
+  }
+  const regionHandler = (e) => {
+    setRegion(e.target.value);
+    chrome.storage.local.set({ 'region': e.target.value });
   }
   const postalCodeHandler = (e) => {
     setPostalCode(e.target.value);
@@ -111,6 +117,8 @@ function MyInfo({getCurrentTabId}) {
       <input type="text" value={address} onChange={addressHandler} ></input>
       <div>City</div>
       <input type="text" value={city} onChange={cityHandler} ></input>
+      <div>Region/State</div>
+      <input type="text" value={region} onChange={regionHandler} ></input>
       <div>Postal Code</div>
       <input type="text" value={postalCode} onChange={postalCodeHandler} ></input>
       <div>Phone Device Type</div>
