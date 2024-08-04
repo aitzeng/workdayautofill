@@ -53,8 +53,8 @@ module.exports = {
                 {
                     from: "public",
                 },
-                { from: 'src/components', to: 'components'},
-                { from: 'src/scripts', to: 'scripts' }
+                { from: 'src/scripts', to: 'scripts' },
+                { from: 'src/pages', to: 'pages' }
             ],
         }),
     ],
