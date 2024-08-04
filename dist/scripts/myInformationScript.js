@@ -1,6 +1,1 @@
-/*global chrome*/
-(function() {
-
-
-
-})();
+chrome.storage.local.get(["prevEmployed","country","firstName","lastName","address","city","postalCode","phoneType","countryCode","phoneNumber"]).then((e=>{let o="Yes"===e.prevEmployed?'[data-uxi-element-id="radio_1"]':'[data-uxi-element-id="radio_2"]';document.querySelector(o).click()}));

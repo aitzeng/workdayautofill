@@ -36,10 +36,6 @@ function MyInfo({getCurrentTabId}) {
       .then((result) =>
         chrome.scripting.executeScript({ target: { tabId: result.id }, files: ["./scripts/myInformationScript.js"] }))
       .then(() => console.log('myInformationScript injected'));
-    let selector = previousEmployed === 'Yes' ? '[data-uxi-element-id="radio_1"]' : '[data-uxi-element-id="radio_2"]';
-    let previousEmployedButton = document.querySelector(selector);
-
-    previousEmployedButton.click();
   }
 
   const prevEmployedHandler = (event) => {
