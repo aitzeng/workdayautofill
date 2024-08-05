@@ -6,6 +6,8 @@ function MyExperience({ getCurrentTabId }) {
 
   const [totalJobs, setTotalJobs] = useState(1);
   const [jobs, setJobs] = useState([]);
+  const [totalEducation, setTotalEducation] = useState(1);
+  const [education, setEducation] = useState([]);
 
   const monthArray = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
   const yearArray = [
@@ -24,8 +26,13 @@ function MyExperience({ getCurrentTabId }) {
     setTotalJobs(e.target.value);
   }
 
+  const totalEducationHandler = (e) => {
+    setTotalEducation(e.target.value);
+  }
+
   const populateJobs = () => {
     // chrome.storage.local.remove('jobs').then(() => { // Clear the local storage for jobs
+    //   chrome.storage.local.remove('totalJobs');
     //   console.log('jobs cleared')
     // })
     chrome.storage.local.get('jobs').then((result) => {
@@ -43,14 +50,19 @@ function MyExperience({ getCurrentTabId }) {
             setJobs(storedJobs);
           })
           .then(() => {
-            chrome.storage.local.get("totalJobs")
+            chrome.storage.local.get('totalJobs')
               .then((result) => {
-                setTotalJobs(result.totalJobs)
+                if (result.totalJobs === undefined) {
+                  chrome.storage.local.set({ 'totalJobs': 1 })
+                  setTotalJobs(1);
+                } else {
+                  setTotalJobs(result.totalJobs)
+                }
               })
           })
       } else {
         setJobs(storedJobs);
-        chrome.storage.local.get("totalJobs")
+        chrome.storage.local.get('totalJobs')
           .then((result) => {
             setTotalJobs(result.totalJobs)
           })
@@ -58,11 +70,58 @@ function MyExperience({ getCurrentTabId }) {
     });
   };
 
+  const populateEducation = () => {
+    // chrome.storage.local.remove('education').then(() => { // Clear the local storage for education
+    //   chrome.storage.local.remove('totalEducation');
+    //   console.log('education cleared')
+    // })
+    chrome.storage.local.get('education').then((result) => {
+      let storedEducation = Array.isArray(result.education) ? result.education : [];
+
+      if (storedEducation.length < 3) {
+        storedEducation = [...storedEducation];
+
+        for (let i = storedEducation.length; i < 3; i++) {
+          storedEducation.push({ school: '', degree: '', fieldOfStudy: '', gradMonth: '', gradYear: '' })
+        }
+
+        chrome.storage.local.set({ education: storedEducation })
+          .then(() => {
+            setEducation(storedEducation);
+          })
+          .then(() => {
+            chrome.storage.local.get('totalEducation')
+              .then((result) => {
+                if (result.totalEducation === undefined) {
+                  chrome.storage.local.set({ 'totalEducation': 1 })
+                  setTotalEducation(1);
+                } else {
+                  setTotalEducation(result.totalEducation)
+                }
+              })
+          })
+      } else {
+        setEducation(storedEducation);
+        chrome.storage.local.get('totalEducation')
+          .then((result) => {
+            setTotalEducation(result.totalEducation)
+          })
+      }
+    })
+  }
+
   const saveExperienceHandler = () => {
     chrome.storage.local.set({ jobs: jobs })
       .then(() => {
         console.log('Job saved to storage:', jobs);
         chrome.storage.local.set({ totalJobs: totalJobs })
+      })
+      .then(() => {
+        chrome.storage.local.set({ education: education })
+          .then(() => {
+            console.log('Education saved to storage:', education);
+            chrome.storage.local.set({ totalEducation: totalEducation })
+          })
       })
   }
 
@@ -76,6 +135,12 @@ function MyExperience({ getCurrentTabId }) {
     setJobs(updatedJobs);
   };
 
+  const handleEducationInputChange = (index, field, value) => {
+    const updatedEducation = [...education];
+    updatedEducation[index][field] = value;
+    setEducation(updatedEducation);
+  };
+
   const autofillSubmitter = () => {
     getCurrentTabId()
       .then((result) =>
@@ -86,6 +151,7 @@ function MyExperience({ getCurrentTabId }) {
 
   useEffect(() => {
     populateJobs();
+    populateEducation();
   }, [])
 
   return (
@@ -144,23 +210,23 @@ function MyExperience({ getCurrentTabId }) {
           {job.current ? null : <div>
             <div className="work-experience-title">End Date</div>
             <div className="end-date-container">
-            <div className="date-container">
-              <div>Month</div>
-              <select value={job.endDateMonth} onChange={(e) => {
-                handleInputChange(index, 'endDateMonth', e.target.value)
-              }}>
-                {monthArray.map((month) => <option value={month}>{month}</option>)}
-              </select>
+              <div className="date-container">
+                <div>Month</div>
+                <select value={job.endDateMonth} onChange={(e) => {
+                  handleInputChange(index, 'endDateMonth', e.target.value)
+                }}>
+                  {monthArray.map((month) => <option value={month}>{month}</option>)}
+                </select>
+              </div>
+              <div className="date-container">
+                <div>Year</div>
+                <select value={job.endDateYear} onChange={(e) => {
+                  handleInputChange(index, 'endDateYear', e.target.value)
+                }}>
+                  {yearArray.map((year) => <option value={year}>{year}</option>)}
+                </select>
+              </div>
             </div>
-            <div className="date-container">
-              <div>Year</div>
-              <select value={job.endDateYear} onChange={(e) => {
-                handleInputChange(index, 'endDateYear', e.target.value)
-              }}>
-                {yearArray.map((year) => <option value={year}>{year}</option>)}
-              </select>
-            </div>
-          </div>
 
           </div>}
           <div>Role Description</div>
@@ -169,6 +235,22 @@ function MyExperience({ getCurrentTabId }) {
           }}></textarea>
         </div >)
       }
+      <div className="work-experience-title">Total Number of Education</div>
+      <select value={totalEducation} onChange={totalEducationHandler}>
+        <option value={1}>1</option>
+        <option value={2}>2</option>
+        <option value={3}>3</option>
+      </select>
+      {education.slice(0, totalEducation).map((school, index) =>
+        <div key={index}>
+          <div className="work-experience-title">School/Univeristy #{index + 1}</div>
+          <div>School Name</div>
+          <input type="text" value={school.school} onChange={(e) => {
+            handleEducationInputChange(index, 'school', e.target.value)
+          }} />
+          <div>Degree</div>
+
+        </div>)}
     </form >
   )
 }
