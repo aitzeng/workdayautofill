@@ -147,7 +147,7 @@ function MyExperience({ getCurrentTabId }) {
         setLanguages(storedLanguage);
         chrome.storage.local.get('languageCount')
           .then((result) => {
-            setTotalEducation(result.languageCount)
+            setLanguageCount(result.languageCount)
           })
       }
     })
@@ -195,6 +195,7 @@ function MyExperience({ getCurrentTabId }) {
   useEffect(() => {
     populateJobs();
     populateEducation();
+    populateLanguages();
   }, [])
 
   return (
