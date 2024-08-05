@@ -37,7 +37,8 @@ function MyInfo({getCurrentTabId}) {
     getCurrentTabId()
       .then((result) =>
         chrome.scripting.executeScript({ target: { tabId: result.id }, files: ["./scripts/myInformationScript.js"] }))
-      .then(() => console.log('myInformationScript injected'));
+      .then(() => console.log('myInformationScript injected'))
+      .then(() => window.close())
   }
 
   const prevEmployedHandler = (event) => {
@@ -118,7 +119,7 @@ function MyInfo({getCurrentTabId}) {
       <div>City</div>
       <input type="text" value={city} onChange={cityHandler} ></input>
       <div>Region/State</div>
-      <input type="text" value={region} onChange={regionHandler} ></input>
+      <input placeholder="Full name of region" type="text" value={region} onChange={regionHandler} ></input>
       <div>Postal Code</div>
       <input type="text" value={postalCode} onChange={postalCodeHandler} ></input>
       <div>Phone Device Type</div>
