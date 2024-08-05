@@ -37,16 +37,26 @@
   }
 
   let populateWorkExperience = (count, array) => {
+    const event = new Event('input', { bubbles: true });
     for (let i = 0; i < count; i++) {
       document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="jobTitle"]`).value = array[i].jobTitle;
       document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="company"]`).value = array[i].company;
       document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="location"]`).value = array[i].location;
-      let startDateElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-startDate"] [data-automation-id="dateSectionMonth-input"]`)
-      startDateElement.value = array[i].startDate;
+      let startDateMonthElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-startDate"] [data-automation-id="dateSectionMonth-input"]`)
+      startDateMonthElement.value = array[i].startDateYear;
+      startDateMonthElement.dispatchEvent(event);
+      let startDateYearElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-startDate"] [data-automation-id="dateSectionYear-input"]`)
+      startDateYearElement.value = array[i].startDateYear;
+      startDateYearElement.dispatchEvent(event);
       if (array[i].current) {
         document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="currentlyWorkHere"]`).click();
       } else {
-        document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-endDate""] [data-automation-id="dateInputWrapper"]`).value = array[i].endDate;
+        let endDateMonthElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-endDate"] [data-automation-id="dateSectionMonth-input"]`)
+        endDateMonthElement.value = array[i].endDateMonth;
+        endDateMonthElement.dispatchEvent(event);
+        let endDateYearElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-endDate"] [data-automation-id="dateSectionYear-input"]`)
+        endDateYearElement.value = array[i].endDateYear;
+        endDateYearElement.dispatchEvent(event);
       }
       document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="description"]`).value = array[i].roleDescription;
     }
@@ -66,11 +76,10 @@
         })
       })
       .then((count) => {
-        console.log('This is count:', count);
         chrome.storage.local.get("jobs")
           .then((result) => {
+            console.log("Array of jobs:", result.jobs);
             populateWorkExperience(count, result.jobs);
-            // console.log("Array of jobs:", result.jobs);
           })
       })
   }
