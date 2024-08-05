@@ -25,9 +25,9 @@
   let adjustWorkCount = (number) => {
     if (number > 0) {
       let element = document.querySelector('[data-automation-id="workExperienceSection"] [data-automation-id="Add"]') || document.querySelector('[data-automation-id="workExperienceSection"] [data-automation-id="Add Another"]')
-      console.log(element);
+      // console.log(element);
       for (let i = 0; i < number; i++) {
-        setTimeout(() => {
+        setTimeout(() => { // Not sure exactly why, but this setTimeout with not time delay helps find the element a lot easier and click it
           element.click();
         })
       }
@@ -67,6 +67,51 @@
     }
   }
 
+  let adjustEducationCount = (number) => {
+    if (number > 0) {
+      let element = document.querySelector('[data-automation-id="educationSection"] [data-automation-id="Add"]') || document.querySelector('[data-automation-id="educationSection"] [data-automation-id="Add Another"]')
+      // console.log(element);
+      for (let i = 0; i < number; i++) {
+        setTimeout(() => {
+          element.click();
+        })
+      }
+    } else {
+      let element = document.querySelector('[data-automation-id="educationSection"] [data-automation-id="panel-set-delete-button"]')
+      for (let i = 0; i < Math.abs(number); i++) {
+        setTimeout(() => {
+          element.click();
+        })
+      }
+    }
+  }
+
+  let selectDropDown = (desiredString, element) => {
+    const dropdownButton = element
+    dropdownButton.click();
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const options = document.querySelectorAll('[role="option"]');
+        options.forEach(option => {
+          if (option.textContent.trim() === desiredString) {
+            option.click();
+          }
+          resolve();
+        })
+      }, 500)
+    })
+  }
+
+  let populateEducationExperience = (count, array) => {
+    for (let i = 0; i < count; i++) {
+      console.log(array[i].school);
+      console.log(array[i].degree);
+      document.querySelector(`[data-automation-id="education-${i+1}"] [data-automation-id="school"]`).value = array[i].school;
+      selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i+1}"] [data-automation-id="degree"]`))
+    }
+  }
+
   let populateMyExperience = () => {
     chrome.storage.local.get("totalJobs")
       .then((result) => {
@@ -83,9 +128,33 @@
       .then((count) => {
         chrome.storage.local.get("jobs")
           .then((result) => {
-            console.log("Array of jobs:", result.jobs);
+            // console.log("Array of jobs:", result.jobs);
             populateWorkExperience(count, result.jobs);
           })
+      })
+      .then(() => {
+        chrome.storage.local.get("totalEducation")
+        .then((result) => {
+          let totalEducationCount = result.totalEducation;
+          // console.log('Total Education Count:', totalEducationCount)
+          let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length || 0;
+          let educationCountDifference = totalEducationCount - webPageEducationCount;
+          adjustEducationCount(educationCountDifference);
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              console.log('Hitting promise for education count')
+              resolve(totalEducationCount);
+            }, 2000)
+          })
+        })
+      })
+      .then((count) => {
+        console.log('This is the count:', count)
+        chrome.storage.local.get("education")
+        .then((result) => {
+          console.log("Array of education:", result.education);
+          populateEducationExperience(count, result.education);
+        })
       })
   }
 
