@@ -38,13 +38,12 @@
       .catch((error) => {
         console.error('Error receiving response', error)
       })
-      .then(() => {
-        let signInButton = document.querySelector('[data-automation-id="click_filter"]')
-        signInButton.click();
-      })
+      // .then(() => {
+      //   let signInButton = document.querySelector('[data-automation-id="click_filter"]')
+      //   signInButton.click();
+      // })
   };
 
   typeLogin();
 
 })();
-

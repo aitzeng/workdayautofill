@@ -8,6 +8,8 @@ function MyExperience({ getCurrentTabId }) {
   const [jobs, setJobs] = useState([]);
   const [totalEducation, setTotalEducation] = useState(1);
   const [education, setEducation] = useState([]);
+  const [languageCount, setLanguageCount] = useState(1);
+  const [languages, setLanguages] = useState([]);
 
   const monthArray = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
   const yearArray = [
@@ -106,6 +108,46 @@ function MyExperience({ getCurrentTabId }) {
         chrome.storage.local.get('totalEducation')
           .then((result) => {
             setTotalEducation(result.totalEducation)
+          })
+      }
+    })
+  }
+
+  const populateLanguages = () => {
+    // chrome.storage.local.remove('languages').then(() => { // Clear the local storage for education
+    //   chrome.storage.local.remove('languageCount');
+    //   console.log('language cleared')
+    // })
+    chrome.storage.local.get('language').then((result) => {
+      let storedLanguage = Array.isArray(result.language) ? result.language : [];
+
+      if (storedLanguage.length < 3) {
+        storedLanguage = [...storedLanguage];
+
+        for (let i = storedLanguage.length; i < 3; i++) {
+          storedLanguage.push({ language: '', overallProficieny: '', reading: '', speaking: '', writing: '' })
+        }
+
+        chrome.storage.local.set({ education: storedLanguage })
+          .then(() => {
+            setLanguages(storedLanguage);
+          })
+          .then(() => {
+            chrome.storage.local.get('languageCount')
+              .then((result) => {
+                if (result.languageCount === undefined) {
+                  chrome.storage.local.set({ 'languageCount': 1 })
+                  setLanguageCount(1);
+                } else {
+                  setLanguageCount(result.languageCount)
+                }
+              })
+          })
+      } else {
+        setLanguages(storedLanguage);
+        chrome.storage.local.get('languageCount')
+          .then((result) => {
+            setTotalEducation(result.languageCount)
           })
       }
     })
