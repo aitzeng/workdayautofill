@@ -1,5 +1,5 @@
 /*global chrome*/
-import './MyInfo.css';
+import '../styles/MyInfo.css';
 import { useState, useEffect } from 'react';
 import { listOfCountries, countriesWithCodes } from '../listOfCountries.js';
 

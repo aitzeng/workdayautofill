@@ -1,6 +1,6 @@
 /*global chrome*/
 import { useState, useEffect } from 'react';
-import './MyExperience.css';
+import '../styles/MyExperience.css';
 
 function MyExperience({ getCurrentTabId }) {
 

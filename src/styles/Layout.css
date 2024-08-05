@@ -1,0 +1,10 @@
+.nav-menu {
+  /* background-color: #282c34; */
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  font-size: calc(10px + 2vmin);
+}
+/* .nav-item {
+  color: white;
+} */

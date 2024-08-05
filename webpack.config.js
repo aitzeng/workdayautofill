@@ -53,6 +53,7 @@ module.exports = {
                 {
                     from: "public",
                 },
+                { from: "src/styles", to: 'styles'},
                 { from: 'src/scripts', to: 'scripts' },
                 { from: 'src/pages', to: 'pages' }
             ],
