@@ -25,19 +25,32 @@ function MyExperience({ getCurrentTabId }) {
           storedJobs.push({ jobTitle: '', company: '', location: '', current: false, roleDescription: '', startDate: '', endDate: '' });
         }
 
-        chrome.storage.local.set({ jobs: storedJobs }).then(() => {
-          setJobs(storedJobs);
-        });
+        chrome.storage.local.set({ jobs: storedJobs })
+          .then(() => {
+            setJobs(storedJobs);
+          })
+          .then(() => {
+            chrome.storage.local.get("totalJobs")
+              .then((result) => {
+                setTotalJobs(result.totalJobs)
+              })
+          })
       } else {
         setJobs(storedJobs);
+        chrome.storage.local.get("totalJobs")
+          .then((result) => {
+            setTotalJobs(result.totalJobs)
+          })
       }
     });
   };
 
   const saveExperienceHandler = () => {
-    chrome.storage.local.set({ jobs: jobs }).then(() => {
-      console.log('Job saved to storage:', jobs)
-    })
+    chrome.storage.local.set({ jobs: jobs })
+      .then(() => {
+        console.log('Job saved to storage:', jobs);
+        chrome.storage.local.set({ totalJobs: totalJobs })
+      })
   }
 
   const handleInputChange = (index, field, value) => {
@@ -46,13 +59,21 @@ function MyExperience({ getCurrentTabId }) {
     setJobs(updatedJobs);
   };
 
+  const autofillSubmitter = () => {
+    getCurrentTabId()
+      .then((result) =>
+        chrome.scripting.executeScript({ target: { tabId: result.id }, files: ["./scripts/myExperienceScript.js"] }))
+      .then(() => console.log('myExperience injected'))
+    // .then(() => window.close())
+  }
+
   useEffect(() => {
     populateJobs();
   }, [])
 
   return (
-    <form className="My-Experience">
-      <button type="button" onClick={saveExperienceHandler}>Save Experience</button>
+    <form className="My-Experience" onSubmit={autofillSubmitter}>
+      <button type="button" onClick={saveExperienceHandler}>Save</button>
       <button type="submit">Auto-fill</button>
       <div className="work-experience-title">Total Number of Jobs</div>
       <select value={totalJobs} onChange={totalJobsHandler}>
