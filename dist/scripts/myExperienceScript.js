@@ -107,8 +107,8 @@
     for (let i = 0; i < count; i++) {
       console.log(array[i].school);
       console.log(array[i].degree);
-      document.querySelector(`[data-automation-id="education-${i+1}"] [data-automation-id="school"]`).value = array[i].school;
-      selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i+1}"] [data-automation-id="degree"]`))
+      document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="school"]`).value = array[i].school;
+      selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="degree"]`))
     }
   }
 
@@ -134,27 +134,26 @@
       })
       .then(() => {
         chrome.storage.local.get("totalEducation")
-        .then((result) => {
-          let totalEducationCount = result.totalEducation;
-          // console.log('Total Education Count:', totalEducationCount)
-          let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length || 0;
-          let educationCountDifference = totalEducationCount - webPageEducationCount;
-          adjustEducationCount(educationCountDifference);
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              console.log('Hitting promise for education count')
-              resolve(totalEducationCount);
-            }, 2000)
+          .then((result) => {
+            let totalEducationCount = result.totalEducation;
+            // console.log('Total Education Count:', totalEducationCount)
+            let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length || 0;
+            let educationCountDifference = totalEducationCount - webPageEducationCount;
+            adjustEducationCount(educationCountDifference);
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                resolve(totalEducationCount);
+              }, 2000)
+            })
           })
-        })
-      })
-      .then((count) => {
-        console.log('This is the count:', count)
-        chrome.storage.local.get("education")
-        .then((result) => {
-          console.log("Array of education:", result.education);
-          populateEducationExperience(count, result.education);
-        })
+          .then((count) => {
+            console.log('This is the count:', count)
+            chrome.storage.local.get("education")
+              .then((result) => {
+                console.log("Array of education:", result.education);
+                populateEducationExperience(count, result.education);
+              })
+          })
       })
   }
 
