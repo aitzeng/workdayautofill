@@ -66,6 +66,12 @@ code {
 /* .info-experience {
   max-height: 100px;
 } */
+.start-date-container{
+  display: flex;
+}
+.end-date-container{
+  display: flex;
+}
 .work-experience-title{
   font-size: 16px;
 }
