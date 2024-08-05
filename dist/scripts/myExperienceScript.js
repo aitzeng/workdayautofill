@@ -24,14 +24,19 @@
 
   let adjustWorkCount = (number) => {
     if (number > 0) {
-      let element = document.querySelector('[data-automation-id="workExperienceSection"] [data-automation-id="Add Another"]')
+      let element = document.querySelector('[data-automation-id="workExperienceSection"] [data-automation-id="Add"]') || document.querySelector('[data-automation-id="workExperienceSection"] [data-automation-id="Add Another"]')
+      console.log(element);
       for (let i = 0; i < number; i++) {
-        element.click();
+        setTimeout(() => {
+          element.click();
+        })
       }
     } else {
       let element = document.querySelector('[data-automation-id="workExperienceSection"] [data-automation-id="panel-set-delete-button"]')
       for (let i = 0; i < Math.abs(number); i++) {
-        element.click();
+        setTimeout(() => {
+          element.click();
+        })
       }
     }
   }
@@ -66,13 +71,13 @@
     chrome.storage.local.get("totalJobs")
       .then((result) => {
         let totalJobCount = result.totalJobs; // Number of jobs set in the extension
-        let webPageJobCount = document.querySelectorAll('[data-automation-id="formField-jobTitle"]').length; // Number of jobs present on the web page
+        let webPageJobCount = document.querySelectorAll('[data-automation-id="formField-jobTitle"]').length || 0; // Number of jobs present on the web page
         let jobCountDifference = totalJobCount - webPageJobCount; // If positive, extension > web page
         adjustWorkCount(jobCountDifference);
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(totalJobCount);
-          }, 100)
+          }, 2000)
         })
       })
       .then((count) => {

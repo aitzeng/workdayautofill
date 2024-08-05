@@ -21,6 +21,7 @@ function MyExperience({ getCurrentTabId }) {
     "2020", "2021", "2022", "2023", "2024"
   ]
 
+  const degreeArray = ['Degree in Progress (no degree awarded)', 'High School Diploma/GED', 'Attendance (No Degree Awareded)', 'Other', 'Non-Degree Program', "Associate's Degree", "Higher Degree", "Bachelor's Degree", "Master's Degree", "M.B.A", "Doctorate Degree", "M.D.", "J.D."]
 
   const totalJobsHandler = (e) => {
     setTotalJobs(e.target.value);
@@ -82,7 +83,7 @@ function MyExperience({ getCurrentTabId }) {
         storedEducation = [...storedEducation];
 
         for (let i = storedEducation.length; i < 3; i++) {
-          storedEducation.push({ school: '', degree: '', fieldOfStudy: '', gradMonth: '', gradYear: '' })
+          storedEducation.push({ school: '', degree: 'Degree in Progress (no degree awarded)', fieldOfStudy: '', gradMonth: '', gradYear: '' })
         }
 
         chrome.storage.local.set({ education: storedEducation })
@@ -249,7 +250,11 @@ function MyExperience({ getCurrentTabId }) {
             handleEducationInputChange(index, 'school', e.target.value)
           }} />
           <div>Degree</div>
-
+          <select value={school.degree} onChange={(e) => {
+            handleEducationInputChange(index, 'degree', e.target.value)
+          }}>
+            {degreeArray.map((degree) => <option value={degree}>{degree}</option>)}
+          </select>
         </div>)}
     </form >
   )
