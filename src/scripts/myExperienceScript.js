@@ -1,56 +1,16 @@
 /*global chrome*/
 (function () {
 
-  let mimicTyping = (string, element) => {
-    element.click();
-    element.value = '';
-    for (let i = 0; i < string.length; i++) {
-      ['keydown', 'keypress', 'keyup'].forEach(eventType => {
-        let event = new KeyboardEvent(eventType, {
-          bubbles: true,
-          cancelable: true,
-          keyCode: string.charCodeAt(i),
-          charCode: string.charCodeAt(i),
-          key: string[i],
-          repeat: false
-        });
-        element.dispatchEvent(event);
-      });
-
-      element.value += string[i];
-      element.blur();
-    }
-  }
-
-  let adjustWorkCount = (number) => {
+  let adjustContentCount = (number, section) => {
     if (number > 0) {
-      let element = document.querySelector('[data-automation-id="workExperienceSection"] [data-automation-id="Add"]') || document.querySelector('[data-automation-id="workExperienceSection"] [data-automation-id="Add Another"]')
-      // console.log(element);
+      let element = document.querySelector(`[data-automation-id="${section}"] [data-automation-id="Add"]`) || document.querySelector(`[data-automation-id="${section}"] [data-automation-id="Add Another"]`)
       for (let i = 0; i < number; i++) {
         setTimeout(() => { // Not sure exactly why, but this setTimeout with not time delay helps find the element a lot easier and click it
           element.click();
         })
       }
     } else {
-      let element = document.querySelector('[data-automation-id="workExperienceSection"] [data-automation-id="panel-set-delete-button"]')
-      for (let i = 0; i < Math.abs(number); i++) {
-        setTimeout(() => {
-          element.click();
-        })
-      }
-    }
-  }
-
-  let adjustLanguageCount = (number) => {
-    if (number > 0) {
-      let element = document.querySelector('[data-automation-id="languageSection"] [data-automation-id="Add"]') || document.querySelector('[data-automation-id="languageSection"] [data-automation-id="Add Another"]')
-      for (let i = 0; i < number; i++) {
-        setTimeout(() => {
-          element.click();
-        })
-      }
-    } else {
-      let element = document.querySelector('[data-automation-id="languageSection"] [data-automation-id="panel-set-delete-button"]')
+      let element = document.querySelector(`[data-automation-id="${section}"] [data-automation-id="panel-set-delete-button"]`)
       for (let i = 0; i < Math.abs(number); i++) {
         setTimeout(() => {
           element.click();
@@ -82,25 +42,6 @@
         endDateYearElement.dispatchEvent(event);
       }
       document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="description"]`).value = array[i].roleDescription;
-    }
-  }
-
-  let adjustEducationCount = (number) => {
-    if (number > 0) {
-      let element = document.querySelector('[data-automation-id="educationSection"] [data-automation-id="Add"]') || document.querySelector('[data-automation-id="educationSection"] [data-automation-id="Add Another"]')
-      // console.log(element);
-      for (let i = 0; i < number; i++) {
-        setTimeout(() => {
-          element.click();
-        })
-      }
-    } else {
-      let element = document.querySelector('[data-automation-id="educationSection"] [data-automation-id="panel-set-delete-button"]')
-      for (let i = 0; i < Math.abs(number); i++) {
-        setTimeout(() => {
-          element.click();
-        })
-      }
     }
   }
 
@@ -167,13 +108,23 @@
     }
   }
 
+  let populateWebsiteExperience = async (count, array) => {
+    const event = new Event('input', { bubbles: true });
+    for (let i = 0; i < count; i++) {
+      let element = document.querySelector(`[data-automation-id="websitePanelSet-${i + 1}"] [data-automation-id="website"]`);
+      element.value = array[i];
+      element.dispatchEvent(event);
+
+    }
+  }
+
   let workExperienceContainer = () => {
     chrome.storage.local.get("totalJobs")
       .then((result) => {
         let totalJobCount = result.totalJobs; // Number of jobs set in the extension
         let webPageJobCount = document.querySelectorAll('[data-automation-id="formField-jobTitle"]').length || 0; // Number of jobs present on the web page
         let jobCountDifference = totalJobCount - webPageJobCount; // If positive, extension > web page
-        adjustWorkCount(jobCountDifference);
+        adjustContentCount(jobCountDifference, 'workExperienceSection');
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(totalJobCount);
@@ -203,7 +154,7 @@
         let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length || 0;
         // console.log('webPageEducationCount:', webPageEducationCount);
         let educationCountDifference = totalEducationCount - webPageEducationCount;
-        adjustEducationCount(educationCountDifference);
+        adjustContentCount(educationCountDifference, 'educationSection');
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(totalEducationCount);
@@ -233,7 +184,7 @@
         let totalLanguageCount = result.languageCount;
         let webPageLanguageCount = document.querySelectorAll('[data-automation-id="formField-language"]').length || 0;
         let languageCountDifference = totalLanguageCount - webPageLanguageCount; // If positive, extension > web page
-        adjustLanguageCount(languageCountDifference);
+        adjustContentCount(languageCountDifference, 'languageSection');
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(totalLanguageCount);
@@ -257,6 +208,28 @@
 
   }
 
+  let websitesContainer = () => {
+    chrome.storage.local.get('websitesCount')
+    .then((result) => {
+      let totalWebsitesCount = result.websitesCount;
+      let webPageWebsitesCount = document.querySelectorAll('[data-automation-id="website"]').length || 0;
+      let websitesCountDifference = totalWebsitesCount - webPageWebsitesCount;
+      adjustContentCount(websitesCountDifference, 'websiteSection')
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(totalWebsitesCount);
+        }, 500)
+      });
+    })
+    .then((count) => {
+      chrome.storage.local.get('websites')
+      .then((result) => {
+        console.log("Array of websites:", result.websites);
+        populateWebsiteExperience(count, result.websites);
+      })
+    })
+  }
+
   let populateMyExperience = async () => {
     // chrome.storage.local.get("jobs") // Checking to see the arrays
     // .then((result) => {
@@ -271,9 +244,10 @@
     //   })
     // })
 
-    workExperienceContainer();
-    educationContainer();
-    languageContainer();
+    await workExperienceContainer();
+    await educationContainer();
+    await languageContainer();
+    await websitesContainer();
 
   }
 
