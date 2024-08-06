@@ -105,7 +105,7 @@
   }
 
   let selectDropDown = (desiredString, element) => {
-    console.log('Element for dropdown:', element)
+    // console.log('Element for dropdown:', element)
     const dropdownButton = element
     dropdownButton.click();
 
@@ -133,25 +133,32 @@
     if (parentElement) {
       const labels = parentElement.querySelectorAll('label');
 
-      const labelExists = Array.from(labels).some(label => label.textContent.trim() === string);
+      const labelExists = Array.from(labels).some(label => label.textContent.trim().includes(string));
 
-      console.log('True');
+      if (labelExists) {
+        console.log('Label with text exists');
+      } else {
+        console.log('Label with text does not exist');
+      }
+
       return labelExists;
 
     } else {
-      console.log('False');
+      console.log('Parent element does not exist');
       return false;
     }
   }
 
   let populateLanguageExperience = async (count, array) => {
+    // console.log('populateLanguageExperience triggered')
     for (let i = 0; i < count; i++) {
-      await selectDropDown(array[i].language, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="language"]`))
-      if (array[i].fluent) {
-        document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="nativeLanguage"]`).click()
-      }
-      if (checkLabelExists(document.querySelector(`[data-automation-id="language-${i + 1}"]`), "Overview")) {
-        await selectDropDown(array[i].reading, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
+      // await selectDropDown(array[i].language, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="language"]`))
+      // if (array[i].fluent) {
+      //   document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="nativeLanguage"]`).click()
+      // }
+      if (checkLabelExists(document.querySelector(`[data-automation-id="language-${i + 1}"]`), "Overall")) {
+        console.log('Overall triggered');
+        await selectDropDown(array[i].overallProficiency, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
       } else {
         await selectDropDown(array[i].reading, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
         await selectDropDown(array[i].speaking, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-1"]`));
@@ -184,47 +191,47 @@
 
   let educationContainer = () => {
     chrome.storage.local.get("totalEducation")
+      .then((result) => {
+        let totalEducationCount = result.totalEducation;
+        // console.log('Total Education Count:', totalEducationCount)
+        let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length || 0;
+        // console.log('webPageEducationCount:', webPageEducationCount);
+        let educationCountDifference = totalEducationCount - webPageEducationCount;
+        adjustEducationCount(educationCountDifference);
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(totalEducationCount);
+          }, 2000)
+        })
+      })
+      .then((count) => {
+        // console.log('This is the count:', count)
+        chrome.storage.local.get("education")
           .then((result) => {
-            let totalEducationCount = result.totalEducation;
-            // console.log('Total Education Count:', totalEducationCount)
-            let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length || 0;
-            // console.log('webPageEducationCount:', webPageEducationCount);
-            let educationCountDifference = totalEducationCount - webPageEducationCount;
-            adjustEducationCount(educationCountDifference);
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                resolve(totalEducationCount);
-              }, 2000)
-            })
+            console.log("Array of education:", result.education);
+            populateEducationExperience(count, result.education);
           })
-          .then((count) => {
-            // console.log('This is the count:', count)
-            chrome.storage.local.get("education")
-              .then((result) => {
-                console.log("Array of education:", result.education);
-                populateEducationExperience(count, result.education);
-              })
-          })
+      })
   }
 
   let languageContainer = () => {
     chrome.storage.local.get("languageCount")
-    .then((result) => {
-      // console.log("Languages Count:", result.languageCount);
-      let totalLanguageCount = result.languageCount;
-      let webPageLanguageCount = document.querySelectorAll('[data-automation-id="formField-language"]').length || 0;
-      let languageCountDifference = totalLanguageCount - webPageLanguageCount; // If positive, extension > web page
-      adjustLanguageCount(languageCountDifference);
-      return totalLanguageCount;
-    })
-    .then((count) => {
-      console.log('This is the count for languages:', count)
-      chrome.storage.local.get("languages")
-        .then((result) => {
-          console.log("Array of languages:", result.languages);
-          populateLanguageExperience(count, result.language);
-        })
-    })
+      .then((result) => {
+        // console.log("Languages Count:", result.languageCount);
+        let totalLanguageCount = result.languageCount;
+        let webPageLanguageCount = document.querySelectorAll('[data-automation-id="formField-language"]').length || 0;
+        let languageCountDifference = totalLanguageCount - webPageLanguageCount; // If positive, extension > web page
+        adjustLanguageCount(languageCountDifference);
+        return totalLanguageCount;
+      })
+      .then((count) => {
+        // console.log('This is the count for languages:', count)
+        chrome.storage.local.get("languages")
+          .then((result) => {
+            console.log("Array of languages:", result.languages);
+            populateLanguageExperience(count, result.languages);
+          })
+      })
   }
 
   let populateMyExperience = async () => {
