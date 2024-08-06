@@ -4,6 +4,9 @@
 .end-date-container{
   display: flex;
 }
+.language-container {
+  display: flex;
+}
 .work-experience-title{
   font-size: 16px;
 }

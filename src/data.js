@@ -253,3 +253,34 @@ export const countriesWithCodes = [
   "Zambia (+260)",
   "Zimbabwe (+263)"
 ];
+
+export const monthArray = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+
+export const yearArray = [
+  "1950", "1951", "1952", "1953", "1954", "1955", "1956", "1957", "1958", "1959",
+  "1960", "1961", "1962", "1963", "1964", "1965", "1966", "1967", "1968", "1969",
+  "1970", "1971", "1972", "1973", "1974", "1975", "1976", "1977", "1978", "1979",
+  "1980", "1981", "1982", "1983", "1984", "1985", "1986", "1987", "1988", "1989",
+  "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
+  "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
+  "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019",
+  "2020", "2021", "2022", "2023", "2024"
+];
+
+export const degreeArray = ['Degree in Progress (no degree awarded)', 'High School Diploma/GED', 'Attendance (No Degree Awareded)', 'Other', 'Non-Degree Program', "Associate's Degree", "Higher Degree", "Bachelor's Degree", "Master's Degree", "M.B.A", "Doctorate Degree", "M.D.", "J.D."];
+
+export const languageProficiencyArray = ['1 - Minimal Competency', '2 - Limited Competency', '3 - Professional Competency', '4 - Advanced Professional Competency', '5 - Complete Mastery'];
+
+export const languageList = [
+  "Afrikaans", "Albanian", "American Sign Language", "Amharic", "Arabic", "Armenian", "Azerbaijani", "Bahasa (Indonesian)",
+  "Bengali", "Bosnian", "Bulgarian", "Burmese", "Chinese (Cantonese)", "Chinese (Mandarin)", "Chinese (Other)",
+  "Chinese (Shanghai)", "Croatian", "Czech", "Danish", "Dari", "Dutch", "English", "Estonian", "Farsi (Persian)",
+  "Finnish", "Flemish", "French", "Georgian", "German", "Greek", "Gujarati", "Hebrew", "Hindi", "Hungarian",
+  "Icelandic", "Indian", "Indian (Hindi)", "Indian (Kannada)", "Indian (Konkani)", "Italian", "Japanese", "Khmer",
+  "Kiswahili", "Korean", "Kurdish", "Laotian", "Latin", "Latvian", "Lithuanian", "Macedonian", "Malay", "Maori",
+  "Navajo", "Norwegian", "Other", "Pashto", "Polish", "Portuguese", "Punjabi", "Romanian", "Russian", "Serbo-Croatian",
+  "Slovak", "Somali", "Spanish", "Swahili", "Swedish", "Tagalog (Philippines)", "Tajik", "Tamil (Ceylon)", "Tamil (India)",
+  "Telugu", "Thai", "Turkish", "Twi (Ghana)", "Uighur", "Ukrainian", "Urdu (Pakistan)", "Uzbek", "Vietnamese", "Welsh"
+];
+
+export const languageLevels = ["Beginner", "Intermediate", "Advanced"]

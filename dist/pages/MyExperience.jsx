@@ -1,6 +1,7 @@
 /*global chrome*/
 import { useState, useEffect } from 'react';
 import '../styles/MyExperience.css';
+import { monthArray, yearArray, degreeArray, languageProficiencyArray, languageList, languageLevels } from '../data.js';
 
 function MyExperience({ getCurrentTabId }) {
 
@@ -11,26 +12,16 @@ function MyExperience({ getCurrentTabId }) {
   const [languageCount, setLanguageCount] = useState(1);
   const [languages, setLanguages] = useState([]);
 
-  const monthArray = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
-  const yearArray = [
-    "1950", "1951", "1952", "1953", "1954", "1955", "1956", "1957", "1958", "1959",
-    "1960", "1961", "1962", "1963", "1964", "1965", "1966", "1967", "1968", "1969",
-    "1970", "1971", "1972", "1973", "1974", "1975", "1976", "1977", "1978", "1979",
-    "1980", "1981", "1982", "1983", "1984", "1985", "1986", "1987", "1988", "1989",
-    "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
-    "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
-    "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019",
-    "2020", "2021", "2022", "2023", "2024"
-  ]
-
-  const degreeArray = ['Degree in Progress (no degree awarded)', 'High School Diploma/GED', 'Attendance (No Degree Awareded)', 'Other', 'Non-Degree Program', "Associate's Degree", "Higher Degree", "Bachelor's Degree", "Master's Degree", "M.B.A", "Doctorate Degree", "M.D.", "J.D."]
-
   const totalJobsHandler = (e) => {
     setTotalJobs(e.target.value);
   }
 
   const totalEducationHandler = (e) => {
     setTotalEducation(e.target.value);
+  }
+
+  const languageCountHandler = (e) => {
+    setLanguageCount(e.target.value);
   }
 
   const populateJobs = () => {
@@ -118,14 +109,14 @@ function MyExperience({ getCurrentTabId }) {
     //   chrome.storage.local.remove('languageCount');
     //   console.log('language cleared')
     // })
-    chrome.storage.local.get('language').then((result) => {
+    chrome.storage.local.get('languages').then((result) => {
       let storedLanguage = Array.isArray(result.language) ? result.language : [];
 
       if (storedLanguage.length < 3) {
         storedLanguage = [...storedLanguage];
 
         for (let i = storedLanguage.length; i < 3; i++) {
-          storedLanguage.push({ language: '', overallProficieny: '', reading: '', speaking: '', writing: '' })
+          storedLanguage.push({ language: '', fluent: false, overallProficieny: '1 - Minimal Competency', reading: 'Beginner', speaking: 'Beginner', writing: 'Beginner' })
         }
 
         chrome.storage.local.set({ education: storedLanguage })
@@ -182,6 +173,16 @@ function MyExperience({ getCurrentTabId }) {
     const updatedEducation = [...education];
     updatedEducation[index][field] = value;
     setEducation(updatedEducation);
+  };
+
+  const handleLanguageInputChange = (index, field, value) => {
+    const updatedLanguages = [...languages];
+    if (field === 'fluent') {
+      updatedLanguages[index][field] = value === 'true';
+    } else {
+      updatedLanguages[index][field] = value;
+    }
+    setLanguages(updatedLanguages);
   };
 
   const autofillSubmitter = () => {
@@ -297,6 +298,59 @@ function MyExperience({ getCurrentTabId }) {
             handleEducationInputChange(index, 'degree', e.target.value)
           }}>
             {degreeArray.map((degree) => <option value={degree}>{degree}</option>)}
+          </select>
+        </div>)}
+      <div className="work-experience-title">Total Number of Languages</div>
+      <select value={languageCount} onChange={languageCountHandler}>
+        <option value={1}>1</option>
+        <option value={2}>2</option>
+        <option value={3}>3</option>
+      </select>
+      {languages.slice(0, languageCount).map((language, index) =>
+        <div key={index}>
+          <div className="work-experience-title">Language #{index + 1}</div>
+          <div className="language-container">
+            <div>
+              <div>Language</div>
+              <select value={language.language} onChange={(e) => {
+                handleLanguageInputChange(index, 'language', e.target.value)
+              }}>
+                {languageList.map((choice) => <option value={choice}>{choice}</option>)}
+              </select>
+            </div>
+            <div>
+              <div>Fluent?</div>
+              <select value={language.fluent} onChange={(e) => {
+                handleLanguageInputChange(index, 'fluent', e.target.value)
+              }}>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+          </div>
+          <div>Overall Proficiency</div>
+          <select value={language.overallProficiency} onChange={(e) => {
+            handleLanguageInputChange(index, 'overallProficiency', e.target.value)
+          }}>
+            {languageProficiencyArray.map((proficiency) => <option value={proficiency}>{proficiency}</option>)}
+          </select>
+          <div>Reading</div>
+          <select value={language.reading} onChange={(e) => {
+            handleLanguageInputChange(index, 'reading', e.target.value)
+          }}>
+            {languageLevels.map((level) => <option value={level}>{level}</option>)}
+          </select>
+          <div>Speaking</div>
+          <select value={language.speaking} onChange={(e) => {
+            handleLanguageInputChange(index, 'speaking', e.target.value)
+          }}>
+            {languageLevels.map((level) => <option value={level}>{level}</option>)}
+          </select>
+          <div>Writing</div>
+          <select value={language.writing} onChange={(e) => {
+            handleLanguageInputChange(index, 'writing', e.target.value)
+          }}>
+            {languageLevels.map((level) => <option value={level}>{level}</option>)}
           </select>
         </div>)}
     </form >

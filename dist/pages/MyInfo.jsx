@@ -1,7 +1,7 @@
 /*global chrome*/
 import '../styles/MyInfo.css';
 import { useState, useEffect } from 'react';
-import { listOfCountries, countriesWithCodes } from '../listOfCountries.js';
+import { listOfCountries, countriesWithCodes } from '../data.js';
 
 function MyInfo({getCurrentTabId}) {
 
