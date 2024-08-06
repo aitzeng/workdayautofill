@@ -152,10 +152,10 @@
   let populateLanguageExperience = async (count, array) => {
     // console.log('populateLanguageExperience triggered')
     for (let i = 0; i < count; i++) {
-      // await selectDropDown(array[i].language, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="language"]`))
-      // if (array[i].fluent) {
-      //   document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="nativeLanguage"]`).click()
-      // }
+      await selectDropDown(array[i].language, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="language"]`))
+      if (array[i].fluent) {
+        document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="nativeLanguage"]`).click()
+      }
       if (checkLabelExists(document.querySelector(`[data-automation-id="language-${i + 1}"]`), "Overall")) {
         console.log('Overall triggered');
         await selectDropDown(array[i].overallProficiency, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
@@ -180,12 +180,18 @@
           }, 2000)
         })
       })
+      .catch((error) => {
+        console.error('Error occured while getting job count', error)
+      })
       .then((count) => {
         chrome.storage.local.get("jobs")
           .then((result) => {
             // console.log("Array of jobs:", result.jobs);
             populateWorkExperience(count, result.jobs);
           })
+      })
+      .catch((error) => {
+        console.error('Error occured while filling job', error)
       })
   }
 
@@ -204,6 +210,9 @@
           }, 2000)
         })
       })
+      .catch((error) => {
+        console.error('Error occured while adding education counts', error)
+      })
       .then((count) => {
         // console.log('This is the count:', count)
         chrome.storage.local.get("education")
@@ -211,6 +220,9 @@
             console.log("Array of education:", result.education);
             populateEducationExperience(count, result.education);
           })
+      })
+      .catch((error) => {
+        console.error('Error occured while filling education', error)
       })
   }
 
@@ -222,7 +234,14 @@
         let webPageLanguageCount = document.querySelectorAll('[data-automation-id="formField-language"]').length || 0;
         let languageCountDifference = totalLanguageCount - webPageLanguageCount; // If positive, extension > web page
         adjustLanguageCount(languageCountDifference);
-        return totalLanguageCount;
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(totalLanguageCount);
+          }, 500)
+        });
+      })
+      .catch((error) => {
+        console.error('Error occured while adding languages', error)
       })
       .then((count) => {
         // console.log('This is the count for languages:', count)
@@ -231,7 +250,11 @@
             console.log("Array of languages:", result.languages);
             populateLanguageExperience(count, result.languages);
           })
+          .catch((error) => {
+            console.error('Error occured while populating languages', error)
+          })
       })
+
   }
 
   let populateMyExperience = async () => {
@@ -248,8 +271,8 @@
     //   })
     // })
 
-    // workExperienceContainer();
-    // educationContainer();
+    workExperienceContainer();
+    educationContainer();
     languageContainer();
 
   }

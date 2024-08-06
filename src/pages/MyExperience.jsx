@@ -11,6 +11,8 @@ function MyExperience({ getCurrentTabId }) {
   const [education, setEducation] = useState([]);
   const [languageCount, setLanguageCount] = useState(1);
   const [languages, setLanguages] = useState([]);
+  const [websitesCount, setWebsitesCount] = useState(1);
+  const [websites, setWebsites] = useState([]);
 
   const totalJobsHandler = (e) => {
     setTotalJobs(e.target.value);
@@ -22,6 +24,10 @@ function MyExperience({ getCurrentTabId }) {
 
   const languageCountHandler = (e) => {
     setLanguageCount(e.target.value);
+  }
+
+  const websitesCountHandler = (e) => {
+    setWebsitesCount(e.target.value);
   }
 
   const populateJobs = () => {
@@ -144,6 +150,46 @@ function MyExperience({ getCurrentTabId }) {
     });
   };
 
+  const populateWebsites = () => {
+    // chrome.storage.local.remove('websites').then(() => { // Clear the local storage for education
+    //   chrome.storage.local.remove('websitesCount');
+    //   console.log('websites cleared')
+    // })
+    chrome.storage.local.get('websites').then((result) => {
+      let storedWebsites = Array.isArray(result.websites) ? result.websites : [];
+
+      if (storedWebsites.length < 3) {
+        storedWebsites = [...storedWebsites];
+
+        for (let i = storedWebsites.length; i < 3; i++) {
+          storedWebsites.push('')
+        }
+
+        chrome.storage.local.set({ websites: websites })
+          .then(() => {
+            setWebsites(storedWebsites);
+          })
+          .then(() => {
+            chrome.storage.local.get('websitesCount')
+              .then((result) => {
+                if (result.websitesCount === undefined) {
+                  chrome.storage.local.set({ 'websitesCount': 1 })
+                  setWebsitesCount(1);
+                } else {
+                  setWebsitesCount(result.websitesCount)
+                }
+              })
+          })
+      } else {
+        setWebsites(storedWebsites);
+        chrome.storage.local.get('websitesCount')
+          .then((result) => {
+            setWebsitesCount(result.websitesCount)
+          })
+      }
+    })
+  }
+
   const saveExperienceHandler = () => {
     chrome.storage.local.set({ jobs: jobs })
       .then(() => {
@@ -161,6 +207,13 @@ function MyExperience({ getCurrentTabId }) {
               .then(() => {
                 console.log('Languages saved to storage:', languages);
                 chrome.storage.local.set({ languageCount: languageCount })
+              })
+              .then(() => {
+                chrome.storage.local.set({ websites: websites })
+                  .then(() => {
+                    console.log('Websites saved to storage:', websites);
+                    chrome.storage.local.set({ websitesCount: websitesCount })
+                  })
               })
           })
       })
@@ -192,6 +245,12 @@ function MyExperience({ getCurrentTabId }) {
     setLanguages(updatedLanguages);
   };
 
+  const handleWebsitesInputChange = (index, value) => {
+    const updatedWebsites = [...websites];
+    updatedWebsites[index] = value;
+    setWebsites(updatedWebsites);
+  }
+
   const autofillSubmitter = () => {
     getCurrentTabId()
       .then((result) =>
@@ -204,6 +263,7 @@ function MyExperience({ getCurrentTabId }) {
     populateJobs();
     populateEducation();
     populateLanguages();
+    populateWebsites();
   }, [])
 
   return (
@@ -359,6 +419,19 @@ function MyExperience({ getCurrentTabId }) {
           }}>
             {languageLevels.map((level) => <option value={level}>{level}</option>)}
           </select>
+        </div>)}
+      <div className="work-experience-title">Total Number of Languages</div>
+      <select value={websitesCount} onChange={websitesCountHandler}>
+        <option value={1}>1</option>
+        <option value={2}>2</option>
+        <option value={3}>3</option>
+      </select>
+      {websites.slice(0, websitesCount).map((website, index) =>
+        <div key={index}>
+          <div>Website #{index + 1}</div>
+          <input type="text" value={website} onChange={(e) => {
+            handleWebsitesInputChange(index, e.target.value);
+          }}/>
         </div>)}
     </form >
   )
