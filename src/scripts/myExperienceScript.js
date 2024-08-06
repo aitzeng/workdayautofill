@@ -41,6 +41,24 @@
     }
   }
 
+  let adjustLanguageCount = (number) => {
+    if (number > 0) {
+      let element = document.querySelector('[data-automation-id="languageSection"] [data-automation-id="Add"]') || document.querySelector('[data-automation-id="languageSection"] [data-automation-id="Add Another"]')
+      for (let i = 0; i < number; i++) {
+        setTimeout(() => {
+          element.click();
+        })
+      }
+    } else {
+      let element = document.querySelector('[data-automation-id="languageSection"] [data-automation-id="panel-set-delete-button"]')
+      for (let i = 0; i < Math.abs(number); i++) {
+        setTimeout(() => {
+          element.click();
+        })
+      }
+    }
+  }
+
   let populateWorkExperience = (count, array) => {
     const event = new Event('input', { bubbles: true });
     for (let i = 0; i < count; i++) {
@@ -87,6 +105,7 @@
   }
 
   let selectDropDown = (desiredString, element) => {
+    console.log('Element for dropdown:', element)
     const dropdownButton = element
     dropdownButton.click();
 
@@ -103,16 +122,45 @@
     })
   }
 
-  let populateEducationExperience = (count, array) => {
+  let populateEducationExperience = async (count, array) => {
     for (let i = 0; i < count; i++) {
-      console.log(array[i].school);
-      console.log(array[i].degree);
       document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="school"]`).value = array[i].school;
-      selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="degree"]`))
+      await selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="degree"]`))
     }
   }
 
-  let populateMyExperience = () => {
+  let checkLabelExists = (parentElement, string) => {
+    if (parentElement) {
+      const labels = parentElement.querySelectorAll('label');
+
+      const labelExists = Array.from(labels).some(label => label.textContent.trim() === string);
+
+      console.log('True');
+      return labelExists;
+
+    } else {
+      console.log('False');
+      return false;
+    }
+  }
+
+  let populateLanguageExperience = async (count, array) => {
+    for (let i = 0; i < count; i++) {
+      await selectDropDown(array[i].language, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="language"]`))
+      if (array[i].fluent) {
+        document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="nativeLanguage"]`).click()
+      }
+      if (checkLabelExists(document.querySelector(`[data-automation-id="language-${i + 1}"]`), "Overview")) {
+        await selectDropDown(array[i].reading, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
+      } else {
+        await selectDropDown(array[i].reading, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
+        await selectDropDown(array[i].speaking, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-1"]`));
+        await selectDropDown(array[i].writing, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-2"]`));
+      }
+    }
+  }
+
+  let workExperienceContainer = () => {
     chrome.storage.local.get("totalJobs")
       .then((result) => {
         let totalJobCount = result.totalJobs; // Number of jobs set in the extension
@@ -132,12 +180,15 @@
             populateWorkExperience(count, result.jobs);
           })
       })
-      .then(() => {
-        chrome.storage.local.get("totalEducation")
+  }
+
+  let educationContainer = () => {
+    chrome.storage.local.get("totalEducation")
           .then((result) => {
             let totalEducationCount = result.totalEducation;
             // console.log('Total Education Count:', totalEducationCount)
             let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length || 0;
+            // console.log('webPageEducationCount:', webPageEducationCount);
             let educationCountDifference = totalEducationCount - webPageEducationCount;
             adjustEducationCount(educationCountDifference);
             return new Promise((resolve) => {
@@ -147,14 +198,53 @@
             })
           })
           .then((count) => {
-            console.log('This is the count:', count)
+            // console.log('This is the count:', count)
             chrome.storage.local.get("education")
               .then((result) => {
                 console.log("Array of education:", result.education);
                 populateEducationExperience(count, result.education);
               })
           })
-      })
+  }
+
+  let languageContainer = () => {
+    chrome.storage.local.get("languageCount")
+    .then((result) => {
+      // console.log("Languages Count:", result.languageCount);
+      let totalLanguageCount = result.languageCount;
+      let webPageLanguageCount = document.querySelectorAll('[data-automation-id="formField-language"]').length || 0;
+      let languageCountDifference = totalLanguageCount - webPageLanguageCount; // If positive, extension > web page
+      adjustLanguageCount(languageCountDifference);
+      return totalLanguageCount;
+    })
+    .then((count) => {
+      console.log('This is the count for languages:', count)
+      chrome.storage.local.get("languages")
+        .then((result) => {
+          console.log("Array of languages:", result.languages);
+          populateLanguageExperience(count, result.language);
+        })
+    })
+  }
+
+  let populateMyExperience = async () => {
+    // chrome.storage.local.get("jobs") // Checking to see the arrays
+    // .then((result) => {
+    //   console.log("This is jobs:", result.jobs);
+    //   chrome.storage.local.get("education")
+    //   .then((result) => {
+    //     console.log('This is education:', result.education);
+    //     chrome.storage.local.get("languages")
+    //     .then((result) => {
+    //       console.log("this is languages:", result.languages)
+    //     })
+    //   })
+    // })
+
+    // workExperienceContainer();
+    // educationContainer();
+    languageContainer();
+
   }
 
   populateMyExperience();

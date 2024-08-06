@@ -36,7 +36,7 @@ function MyExperience({ getCurrentTabId }) {
         storedJobs = [...storedJobs];
 
         for (let i = storedJobs.length; i < 5; i++) {
-          storedJobs.push({ jobTitle: '', company: '', location: '', current: false, roleDescription: '', startDateMonth: '', startDateYear: '', endDateMonth: '', endDateYear: '' });
+          storedJobs.push({ jobTitle: '', company: '', location: '', current: false, roleDescription: '', startDateMonth: '01', startDateYear: '1950', endDateMonth: '01', endDateYear: '1950' });
         }
 
         chrome.storage.local.set({ jobs: storedJobs })
@@ -65,7 +65,7 @@ function MyExperience({ getCurrentTabId }) {
   };
 
   const populateEducation = () => {
-    // chrome.storage.local.remove('education').then(() => { // Clear the local storage for education
+    // chrome.storage.local.remove('education').then(() => { // Clear the local storage for jobs
     //   chrome.storage.local.remove('totalEducation');
     //   console.log('education cleared')
     // })
@@ -76,7 +76,7 @@ function MyExperience({ getCurrentTabId }) {
         storedEducation = [...storedEducation];
 
         for (let i = storedEducation.length; i < 3; i++) {
-          storedEducation.push({ school: '', degree: 'Degree in Progress (no degree awarded)', fieldOfStudy: '', gradMonth: '', gradYear: '' })
+          storedEducation.push({ school: '', degree: 'Degree in Progress (no degree awarded)', fieldOfStudy: '', gradMonth: '', gradYear: '' });
         }
 
         chrome.storage.local.set({ education: storedEducation })
@@ -101,8 +101,8 @@ function MyExperience({ getCurrentTabId }) {
             setTotalEducation(result.totalEducation)
           })
       }
-    })
-  }
+    });
+  };
 
   const populateLanguages = () => {
     // chrome.storage.local.remove('languages').then(() => { // Clear the local storage for education
@@ -110,18 +110,18 @@ function MyExperience({ getCurrentTabId }) {
     //   console.log('language cleared')
     // })
     chrome.storage.local.get('languages').then((result) => {
-      let storedLanguage = Array.isArray(result.language) ? result.language : [];
+      let storedLanguages = Array.isArray(result.languages) ? result.languages : [];
 
-      if (storedLanguage.length < 3) {
-        storedLanguage = [...storedLanguage];
+      if (storedLanguages.length < 3) {
+        storedLanguages = [...storedLanguages];
 
-        for (let i = storedLanguage.length; i < 3; i++) {
-          storedLanguage.push({ language: '', fluent: false, overallProficieny: '1 - Minimal Competency', reading: 'Beginner', speaking: 'Beginner', writing: 'Beginner' })
+        for (let i = storedLanguages.length; i < 3; i++) {
+          storedLanguages.push({ language: 'Afrikaans', fluent: false, overallProficiency: '1 - Minimal Competency', reading: 'Beginner', speaking: 'Beginner', writing: 'Beginner' });
         }
 
-        chrome.storage.local.set({ education: storedLanguage })
+        chrome.storage.local.set({ languages: storedLanguages })
           .then(() => {
-            setLanguages(storedLanguage);
+            setLanguages(storedLanguages);
           })
           .then(() => {
             chrome.storage.local.get('languageCount')
@@ -135,14 +135,14 @@ function MyExperience({ getCurrentTabId }) {
               })
           })
       } else {
-        setLanguages(storedLanguage);
+        setLanguages(storedLanguages);
         chrome.storage.local.get('languageCount')
           .then((result) => {
             setLanguageCount(result.languageCount)
           })
       }
-    })
-  }
+    });
+  };
 
   const saveExperienceHandler = () => {
     chrome.storage.local.set({ jobs: jobs })
@@ -155,6 +155,13 @@ function MyExperience({ getCurrentTabId }) {
           .then(() => {
             console.log('Education saved to storage:', education);
             chrome.storage.local.set({ totalEducation: totalEducation })
+          })
+          .then(() => {
+            chrome.storage.local.set({ languages: languages })
+              .then(() => {
+                console.log('Languages saved to storage:', languages);
+                chrome.storage.local.set({ languageCount: languageCount })
+              })
           })
       })
   }

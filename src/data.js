@@ -267,7 +267,22 @@ export const yearArray = [
   "2020", "2021", "2022", "2023", "2024"
 ];
 
-export const degreeArray = ['Degree in Progress (no degree awarded)', 'High School Diploma/GED', 'Attendance (No Degree Awareded)', 'Other', 'Non-Degree Program', "Associate's Degree", "Higher Degree", "Bachelor's Degree", "Master's Degree", "M.B.A", "Doctorate Degree", "M.D.", "J.D."];
+export const degreeArray = [
+  "Degree in Progress (no degree awarded)",
+  "High School Diploma/GED",
+  "Attendance (No Degree Awarded)",
+  "Other",
+  "Non-Degree Program",
+  "Associate's Degree",
+  "Technical Diploma",
+  "Higher Degree",
+  "Bachelor's Degree",
+  "Master's Degree",
+  "M.B.A.",
+  "Doctorate Degree",
+  "M.D.",
+  "J.D."
+];
 
 export const languageProficiencyArray = ['1 - Minimal Competency', '2 - Limited Competency', '3 - Professional Competency', '4 - Advanced Professional Competency', '5 - Complete Mastery'];
 
