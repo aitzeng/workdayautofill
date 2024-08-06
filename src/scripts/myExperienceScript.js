@@ -64,8 +64,46 @@
   }
 
   let populateEducationExperience = async (count, array) => {
+    const keydown = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13
+    });
+    const keypress = new KeyboardEvent('keypress', {
+      bubbles: true,
+      cancelable: true,
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13
+    });
+    const keyup = new KeyboardEvent('keyup', {
+      bubbles: true,
+      cancelable: true,
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13
+    });
     for (let i = 0; i < count; i++) {
-      document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="school"]`).value = array[i].school;
+      if (document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="school"]`)) {
+        document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="school"]`).value = array[i].school;
+      } else {
+        let element = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="multiselectInputContainer"]`)
+        console.log("Input element:", element);
+        element.click();
+        setTimeout(() => {
+          let searchElement = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="searchBox"]`);
+          console.log(searchElement);
+          searchElement.value = array[i].school;
+          searchElement.dispatchEvent(keydown);
+          searchElement.dispatchEvent(keypress);
+          searchElement.dispatchEvent(keyup);
+        }, 1000);
+      }
       await selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="degree"]`))
     }
   }
@@ -132,7 +170,8 @@
         })
       })
       .catch((error) => {
-        console.error('Error occured while getting job count', error)
+        console.error('Error occured while getting job count', error);
+        return 0;
       })
       .then((count) => {
         chrome.storage.local.get("jobs")
@@ -140,6 +179,10 @@
             // console.log("Array of jobs:", result.jobs);
             populateWorkExperience(count, result.jobs);
           })
+          .catch((error) => {
+            console.error('Error occurred while getting jobs:', error);
+            populateWorkExperience(count, []);
+          });
       })
       .catch((error) => {
         console.error('Error occured while filling job', error)
@@ -151,9 +194,10 @@
       .then((result) => {
         let totalEducationCount = result.totalEducation;
         // console.log('Total Education Count:', totalEducationCount)
-        let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length || 0;
+        let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length + document.querySelectorAll('[data-automation-id="formField-schoolItem"]').length;
         // console.log('webPageEducationCount:', webPageEducationCount);
         let educationCountDifference = totalEducationCount - webPageEducationCount;
+        // console.log('Education Count Difference:', educationCountDifference)
         adjustContentCount(educationCountDifference, 'educationSection');
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -162,7 +206,8 @@
         })
       })
       .catch((error) => {
-        console.error('Error occured while adding education counts', error)
+        console.error('Error occured while adding education counts', error);
+        return 0;
       })
       .then((count) => {
         // console.log('This is the count:', count)
@@ -170,6 +215,10 @@
           .then((result) => {
             console.log("Array of education:", result.education);
             populateEducationExperience(count, result.education);
+          })
+          .catch((error) => {
+            console.error("Unable to retreive education");
+            populateEducationExperience(count, [])
           })
       })
       .catch((error) => {
@@ -192,7 +241,8 @@
         });
       })
       .catch((error) => {
-        console.error('Error occured while adding languages', error)
+        console.error('Error occured while adding languages', error);
+        return 0;
       })
       .then((count) => {
         // console.log('This is the count for languages:', count)
@@ -203,31 +253,45 @@
           })
           .catch((error) => {
             console.error('Error occured while populating languages', error)
+            populateLanguageExperience(count, []);
           })
       })
-
+      .catch((error) => {
+        console.error('Error occurred while populating languages:', error);
+      });
   }
 
   let websitesContainer = () => {
     chrome.storage.local.get('websitesCount')
-    .then((result) => {
-      let totalWebsitesCount = result.websitesCount;
-      let webPageWebsitesCount = document.querySelectorAll('[data-automation-id="website"]').length || 0;
-      let websitesCountDifference = totalWebsitesCount - webPageWebsitesCount;
-      adjustContentCount(websitesCountDifference, 'websiteSection')
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(totalWebsitesCount);
-        }, 500)
-      });
-    })
-    .then((count) => {
-      chrome.storage.local.get('websites')
       .then((result) => {
-        console.log("Array of websites:", result.websites);
-        populateWebsiteExperience(count, result.websites);
+        let totalWebsitesCount = result.websitesCount;
+        let webPageWebsitesCount = document.querySelectorAll('[data-automation-id="website"]').length || 0;
+        let websitesCountDifference = totalWebsitesCount - webPageWebsitesCount;
+        adjustContentCount(websitesCountDifference, 'websiteSection')
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(totalWebsitesCount);
+          }, 500)
+        });
       })
-    })
+      .catch((error) => {
+        console.error('Error occurred while getting websites count:', error);
+        return 0;
+      })
+      .then((count) => {
+        chrome.storage.local.get('websites')
+          .then((result) => {
+            console.log("Array of websites:", result.websites);
+            populateWebsiteExperience(count, result.websites);
+          })
+          .catch((error) => {
+            console.error('Error occurred while retrieving websites:', error);
+            populateWebsiteExperience(count, []); // Continue with an empty array if an error occurs
+          });
+      })
+      .catch((error) => {
+        console.error('Error occurred while populating websites:', error);
+      });
   }
 
   let populateMyExperience = async () => {
@@ -244,10 +308,10 @@
     //   })
     // })
 
-    await workExperienceContainer();
+    // await workExperienceContainer();
     await educationContainer();
-    await languageContainer();
-    await websitesContainer();
+    // await languageContainer();
+    // await websitesContainer();
 
   }
 
