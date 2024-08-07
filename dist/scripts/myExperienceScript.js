@@ -1,20 +1,68 @@
 /*global chrome*/
 (function () {
 
+  let levenshteinDistance = (a, b) => {
+    const matrix = [];
+
+    // Initialize the first row and column of the matrix
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+
+    // Calculate distances
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // Substitution
+            matrix[i][j - 1] + 1,     // Insertion
+            matrix[i - 1][j] + 1      // Deletion
+          );
+        }
+      }
+    }
+
+    return matrix[b.length][a.length];
+  }
+
+  let findMostSimilarString = (sample, array) => {
+    let closestString = array[0];
+    let closestDistance = levenshteinDistance(sample, closestString);
+
+    for (let i = 1; i < array.length; i++) {
+      const currentDistance = levenshteinDistance(sample, array[i]);
+      if (currentDistance < closestDistance) {
+        closestDistance = currentDistance;
+        closestString = array[i];
+      }
+    }
+
+    return closestString;
+  }
+
   let adjustContentCount = (number, section) => {
+    const event = new Event('contentAdjusted');
     if (number > 0) {
-      let element = document.querySelector(`[data-automation-id="${section}"] [data-automation-id="Add"]`) || document.querySelector(`[data-automation-id="${section}"] [data-automation-id="Add Another"]`)
+      let element = document.querySelector(`[data-automation-id="${section}"] [data-automation-id="Add"]`) || document.querySelector(`[data-automation-id="${section}"] [data-automation-id="Add Another"]`);
+      console.log('Add button to be clicked:', element);
       for (let i = 0; i < number; i++) {
         setTimeout(() => { // Not sure exactly why, but this setTimeout with not time delay helps find the element a lot easier and click it
           element.click();
-        })
+          document.dispatchEvent(event);
+        }, 500)
       }
     } else {
       let element = document.querySelector(`[data-automation-id="${section}"] [data-automation-id="panel-set-delete-button"]`)
       for (let i = 0; i < Math.abs(number); i++) {
         setTimeout(() => {
           element.click();
-        })
+          document.dispatchEvent(event);
+        }, 500)
       }
     }
   }
@@ -46,22 +94,52 @@
   }
 
   let selectDropDown = (desiredString, element) => {
-    // console.log('Element for dropdown:', element)
-    const dropdownButton = element
-    dropdownButton.click();
+    if (!element) {
+      console.error('Dropdown not found');
+      return Promise.reject(new Error('Dropdown not found'));
+    }
 
-    return new Promise((resolve) => {
+    try {
+      element.click();
+    } catch (error) {
+      console.error('Failed to click dropdown:', error);
+      return Promise.reject(new Error('Failed to click dropdown'));
+    }
+
+    return new Promise((resolve, reject) => {
       setTimeout(() => {
         const options = document.querySelectorAll('[role="option"]');
+        let foundOption = false;
+        let closestOption = null;
+        let closestDistance = Infinity;
+
         options.forEach(option => {
-          if (option.textContent.trim() === desiredString) {
+          const optionText = option.textContent.trim();
+
+          if (optionText === desiredString) {
+            foundOption = true;
             option.click();
+            resolve();
+          } else {
+            const distance = levenshteinDistance(desiredString, optionText);
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestOption = option;
+            }
           }
+        });
+
+        if (!foundOption && closestOption) {
+          closestOption.click();
           resolve();
-        })
-      }, 500)
-    })
-  }
+        } else if (!foundOption) {
+          element.click(); // Click out of the dropdown
+          element.click(); // Closes the dropdown
+          reject(new Error(`Option not found`));
+        }
+      }, 500);
+    });
+  };
 
   let populateEducationExperience = async (count, array) => {
     const keydown = new KeyboardEvent('keydown', {
@@ -93,7 +171,6 @@
         document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="school"]`).value = array[i].school;
       } else {
         let element = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="multiselectInputContainer"]`)
-        console.log("Input element:", element);
         element.click();
         setTimeout(() => {
           let searchElement = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="searchBox"]`);
@@ -104,7 +181,7 @@
           searchElement.dispatchEvent(keyup);
         }, 1000);
       }
-      await selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="degree"]`))
+      await selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="degree"]`));
     }
   }
 
@@ -131,17 +208,21 @@
   let populateLanguageExperience = async (count, array) => {
     // console.log('populateLanguageExperience triggered')
     for (let i = 0; i < count; i++) {
-      await selectDropDown(array[i].language, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="language"]`))
-      if (array[i].fluent) {
-        document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="nativeLanguage"]`).click()
-      }
-      if (checkLabelExists(document.querySelector(`[data-automation-id="language-${i + 1}"]`), "Overall")) {
-        console.log('Overall triggered');
-        await selectDropDown(array[i].overallProficiency, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
-      } else {
-        await selectDropDown(array[i].reading, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
-        await selectDropDown(array[i].speaking, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-1"]`));
-        await selectDropDown(array[i].writing, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-2"]`));
+      try {
+        await selectDropDown(array[i].language, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="language"]`))
+        if (array[i].fluent) {
+          document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="nativeLanguage"]`).click()
+        }
+        if (checkLabelExists(document.querySelector(`[data-automation-id="language-${i + 1}"]`), "Overall")) {
+          console.log('Overall triggered');
+          await selectDropDown(array[i].overallProficiency, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
+        } else {
+          await selectDropDown(array[i].reading, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-0"]`));
+          await selectDropDown(array[i].speaking, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-1"]`));
+          await selectDropDown(array[i].writing, document.querySelector(`[data-automation-id="language-${i + 1}"] [data-automation-id="languageProficiency-2"]`));
+        }
+      } catch (error) {
+        console.error(`Error processing language at index ${i}`, error);
       }
     }
   }
@@ -150,9 +231,11 @@
     const event = new Event('input', { bubbles: true });
     for (let i = 0; i < count; i++) {
       let element = document.querySelector(`[data-automation-id="websitePanelSet-${i + 1}"] [data-automation-id="website"]`);
-      element.value = array[i];
-      element.dispatchEvent(event);
-
+      console.log('Input element for website links:', element);
+      setTimeout(() => {
+        element.value = array[i];
+        element.dispatchEvent(event);
+      }, 500)
     }
   }
 
@@ -186,6 +269,14 @@
       })
       .catch((error) => {
         console.error('Error occured while filling job', error)
+      })
+      .then(() => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            console.log('Finished workContainer');
+            resolve();
+          }, 500)
+        })
       })
   }
 
@@ -224,20 +315,30 @@
       .catch((error) => {
         console.error('Error occured while filling education', error)
       })
+      .then(() => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            console.log('Finished educationContainer');
+            resolve();
+          }, 500)
+        })
+      })
   }
 
   let languageContainer = () => {
     chrome.storage.local.get("languageCount")
       .then((result) => {
-        // console.log("Languages Count:", result.languageCount);
+        console.log("Languages Count:", result.languageCount);
         let totalLanguageCount = result.languageCount;
         let webPageLanguageCount = document.querySelectorAll('[data-automation-id="formField-language"]').length || 0;
+        console.log('webPageLanguageCount:', webPageLanguageCount);
         let languageCountDifference = totalLanguageCount - webPageLanguageCount; // If positive, extension > web page
+        console.log('languageCountDifference:', languageCountDifference);
         adjustContentCount(languageCountDifference, 'languageSection');
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(totalLanguageCount);
-          }, 500)
+          }, 2000)
         });
       })
       .catch((error) => {
@@ -245,10 +346,10 @@
         return 0;
       })
       .then((count) => {
-        // console.log('This is the count for languages:', count)
+        console.log('This is the count for languages:', count)
         chrome.storage.local.get("languages")
           .then((result) => {
-            console.log("Array of languages:", result.languages);
+            // console.log("Array of languages:", result.languages);
             populateLanguageExperience(count, result.languages);
           })
           .catch((error) => {
@@ -258,7 +359,15 @@
       })
       .catch((error) => {
         console.error('Error occurred while populating languages:', error);
-      });
+      })
+      .then(() => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            // console.log('Finished languageContainer');
+            resolve();
+          }, 500)
+        })
+      })
   }
 
   let websitesContainer = () => {
@@ -271,7 +380,7 @@
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(totalWebsitesCount);
-          }, 500)
+          }, 2000)
         });
       })
       .catch((error) => {
@@ -291,7 +400,15 @@
       })
       .catch((error) => {
         console.error('Error occurred while populating websites:', error);
-      });
+      })
+      .then(() => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            console.log('Finished websiteContainer');
+            resolve();
+          }, 500)
+        })
+      })
   }
 
   let populateMyExperience = async () => {
@@ -309,8 +426,8 @@
     // })
 
     // await workExperienceContainer();
-    await educationContainer();
-    // await languageContainer();
+    // await educationContainer();
+    await languageContainer();
     // await websitesContainer();
 
   }

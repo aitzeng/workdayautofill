@@ -361,11 +361,9 @@ function MyExperience({ getCurrentTabId }) {
             handleEducationInputChange(index, 'school', e.target.value)
           }} />
           <div>Degree</div>
-          <select value={school.degree} onChange={(e) => {
+          <input type="text" value={school.degree} onChange={(e) => {
             handleEducationInputChange(index, 'degree', e.target.value)
-          }}>
-            {degreeArray.map((degree) => <option value={degree}>{degree}</option>)}
-          </select>
+          }} />
         </div>)}
       <div className="work-experience-title">Total Number of Languages</div>
       <select value={languageCount} onChange={languageCountHandler}>
