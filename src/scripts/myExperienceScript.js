@@ -1,6 +1,42 @@
 /*global chrome*/
 (function () {
 
+  const elementsToFocus = [];
+
+  let mimicEnter = (element) => {
+    const keydown = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13
+    });
+    const keypress = new KeyboardEvent('keypress', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13
+    });
+    const keyup = new KeyboardEvent('keyup', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13
+    });
+
+    element.dispatchEvent(keydown);
+    element.dispatchEvent(keypress);
+    element.dispatchEvent(keyup);
+  }
+
   let levenshteinDistance = (a, b) => {
     const matrix = [];
 
@@ -70,15 +106,22 @@
   let populateWorkExperience = (count, array) => {
     const event = new Event('input', { bubbles: true });
     for (let i = 0; i < count; i++) {
-      document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="jobTitle"]`).value = array[i].jobTitle;
-      document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="company"]`).value = array[i].company;
-      document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="location"]`).value = array[i].location;
+      let jobTitleElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="jobTitle"]`)
+      let companyElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="company"]`)
+      let locationElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="location"]`)
+      jobTitleElement.value = array[i].jobTitle;
+      companyElement.value = array[i].company;
+      locationElement.value = array[i].location;
+
       let startDateMonthElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-startDate"] [data-automation-id="dateSectionMonth-input"]`)
       startDateMonthElement.value = array[i].startDateYear;
       startDateMonthElement.dispatchEvent(event);
       let startDateYearElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-startDate"] [data-automation-id="dateSectionYear-input"]`)
       startDateYearElement.value = array[i].startDateYear;
       startDateYearElement.dispatchEvent(event);
+
+      elementsToFocus.push(jobTitleElement, companyElement, locationElement, startDateMonthElement, startDateYearElement);
+
       if (array[i].current) {
         document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="currentlyWorkHere"]`).click();
       } else {
@@ -88,8 +131,12 @@
         let endDateYearElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-endDate"] [data-automation-id="dateSectionYear-input"]`)
         endDateYearElement.value = array[i].endDateYear;
         endDateYearElement.dispatchEvent(event);
+
+        elementsToFocus.push(endDateMonthElement, endDateYearElement);
       }
-      document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="description"]`).value = array[i].roleDescription;
+      let roleDescriptionElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="description"]`)
+      roleDescriptionElement.value = array[i].roleDescription;
+      elementsToFocus.push(roleDescriptionElement);
     }
   }
 
@@ -142,33 +189,11 @@
   };
 
   let populateEducationExperience = async (count, array) => {
-    const keydown = new KeyboardEvent('keydown', {
-      bubbles: true,
-      cancelable: true,
-      key: 'Enter',
-      code: 'Enter',
-      keyCode: 13,
-      which: 13
-    });
-    const keypress = new KeyboardEvent('keypress', {
-      bubbles: true,
-      cancelable: true,
-      key: 'Enter',
-      code: 'Enter',
-      keyCode: 13,
-      which: 13
-    });
-    const keyup = new KeyboardEvent('keyup', {
-      bubbles: true,
-      cancelable: true,
-      key: 'Enter',
-      code: 'Enter',
-      keyCode: 13,
-      which: 13
-    });
     for (let i = 0; i < count; i++) {
-      if (document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="school"]`)) {
-        document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="school"]`).value = array[i].school;
+      let schoolElement = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="school"]`)
+      if (schoolElement) {
+        schoolElement.value = array[i].school;
+        elementsToFocus.push(schoolElement);
       } else {
         let element = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="multiselectInputContainer"]`)
         element.click();
@@ -176,9 +201,8 @@
           let searchElement = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="searchBox"]`);
           console.log(searchElement);
           searchElement.value = array[i].school;
-          searchElement.dispatchEvent(keydown);
-          searchElement.dispatchEvent(keypress);
-          searchElement.dispatchEvent(keyup);
+          elementsToFocus.push(searchElement);
+          mimicEnter(searchElement);
         }, 1000);
       }
       await selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="degree"]`));
@@ -230,36 +254,38 @@
   let populateWebsiteExperience = async (count, array) => {
     const event = new Event('input', { bubbles: true });
     for (let i = 0; i < count; i++) {
-      let element = document.querySelector(`[data-automation-id="websitePanelSet-${i + 1}"] [data-automation-id="website"]`);
-      console.log('Input element for website links:', element);
+      let websiteElement = document.querySelector(`[data-automation-id="websitePanelSet-${i + 1}"] [data-automation-id="website"]`);
+      console.log('Input element for website links:', websiteElement);
       setTimeout(() => {
-        element.value = array[i];
-        element.dispatchEvent(event);
+        websiteElement.value = array[i];
+        elementsToFocus.push(websiteElement);
+        websiteElement.dispatchEvent(event);
       }, 500)
     }
   }
 
   let workExperienceContainer = () => {
-    chrome.storage.local.get("totalJobs")
+    return chrome.storage.local.get("totalJobs")
       .then((result) => {
         let totalJobCount = result.totalJobs; // Number of jobs set in the extension
         let webPageJobCount = document.querySelectorAll('[data-automation-id="formField-jobTitle"]').length || 0; // Number of jobs present on the web page
         let jobCountDifference = totalJobCount - webPageJobCount; // If positive, extension > web page
-        adjustContentCount(jobCountDifference, 'workExperienceSection');
-        return new Promise((resolve) => {
+
+        adjustContentCount(jobCountDifference, 'workExperienceSection'); // Adjust # of listings
+
+        return new Promise((resolve) => { // Gives time to add/delete jobs
           setTimeout(() => {
             resolve(totalJobCount);
-          }, 2000)
-        })
+          }, 2000);
+        });
       })
       .catch((error) => {
-        console.error('Error occured while getting job count', error);
-        return 0;
+        console.error('Error occurred while getting job count', error);
+        return 0; // Resolve with default count if there's an error
       })
       .then((count) => {
-        chrome.storage.local.get("jobs")
+        return chrome.storage.local.get("jobs")
           .then((result) => {
-            // console.log("Array of jobs:", result.jobs);
             populateWorkExperience(count, result.jobs);
           })
           .catch((error) => {
@@ -268,119 +294,121 @@
           });
       })
       .catch((error) => {
-        console.error('Error occured while filling job', error)
+        console.error('Error occurred while filling job', error);
       })
       .then(() => {
         return new Promise((resolve) => {
           setTimeout(() => {
             console.log('Finished workContainer');
             resolve();
-          }, 500)
-        })
-      })
+          }, 500);
+        });
+      });
   }
 
   let educationContainer = () => {
-    chrome.storage.local.get("totalEducation")
+    return chrome.storage.local.get("totalEducation")
       .then((result) => {
         let totalEducationCount = result.totalEducation;
-        // console.log('Total Education Count:', totalEducationCount)
-        let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length + document.querySelectorAll('[data-automation-id="formField-schoolItem"]').length;
-        // console.log('webPageEducationCount:', webPageEducationCount);
+        let webPageEducationCount = document.querySelectorAll('[data-automation-id="formField-school"]').length +
+          document.querySelectorAll('[data-automation-id="formField-schoolItem"]').length;
         let educationCountDifference = totalEducationCount - webPageEducationCount;
-        // console.log('Education Count Difference:', educationCountDifference)
+
         adjustContentCount(educationCountDifference, 'educationSection');
+
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(totalEducationCount);
-          }, 2000)
-        })
+          }, 2000);
+        });
       })
       .catch((error) => {
-        console.error('Error occured while adding education counts', error);
+        console.error('Error occurred while adding education counts', error);
         return 0;
       })
       .then((count) => {
-        // console.log('This is the count:', count)
-        chrome.storage.local.get("education")
+        return chrome.storage.local.get("education")
           .then((result) => {
             console.log("Array of education:", result.education);
             populateEducationExperience(count, result.education);
           })
           .catch((error) => {
-            console.error("Unable to retreive education");
-            populateEducationExperience(count, [])
-          })
-      })
-      .catch((error) => {
-        console.error('Error occured while filling education', error)
+            console.error("Unable to retrieve education:", error);
+            populateEducationExperience(count, []);
+          });
       })
       .then(() => {
         return new Promise((resolve) => {
           setTimeout(() => {
             console.log('Finished educationContainer');
             resolve();
-          }, 500)
-        })
+          }, 500);
+        });
       })
+      .catch((error) => {
+        console.error('Error occurred while filling education:', error);
+      });
   }
 
   let languageContainer = () => {
-    chrome.storage.local.get("languageCount")
+    return chrome.storage.local.get("languageCount")
       .then((result) => {
         console.log("Languages Count:", result.languageCount);
         let totalLanguageCount = result.languageCount;
         let webPageLanguageCount = document.querySelectorAll('[data-automation-id="formField-language"]').length || 0;
         console.log('webPageLanguageCount:', webPageLanguageCount);
-        let languageCountDifference = totalLanguageCount - webPageLanguageCount; // If positive, extension > web page
+        let languageCountDifference = totalLanguageCount - webPageLanguageCount;
         console.log('languageCountDifference:', languageCountDifference);
+
         adjustContentCount(languageCountDifference, 'languageSection');
+
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(totalLanguageCount);
-          }, 2000)
+          }, 2000);
         });
       })
       .catch((error) => {
-        console.error('Error occured while adding languages', error);
+        console.error('Error occurred while adding languages:', error);
         return 0;
       })
       .then((count) => {
-        console.log('This is the count for languages:', count)
-        chrome.storage.local.get("languages")
+        return chrome.storage.local.get("languages")
           .then((result) => {
-            // console.log("Array of languages:", result.languages);
+            console.log("Array of languages:", result.languages);
             populateLanguageExperience(count, result.languages);
           })
           .catch((error) => {
-            console.error('Error occured while populating languages', error)
+            console.error('Error occurred while populating languages:', error);
             populateLanguageExperience(count, []);
-          })
-      })
-      .catch((error) => {
-        console.error('Error occurred while populating languages:', error);
+          });
       })
       .then(() => {
         return new Promise((resolve) => {
           setTimeout(() => {
-            // console.log('Finished languageContainer');
+            console.log('Finished languageContainer');
             resolve();
-          }, 500)
-        })
+          }, 500);
+        });
       })
+      .catch((error) => {
+        console.error('Error occurred while processing languages:', error);
+      });
   }
 
   let websitesContainer = () => {
-    chrome.storage.local.get('websitesCount')
+    return chrome.storage.local.get('websitesCount')
       .then((result) => {
         let totalWebsitesCount = result.websitesCount;
         let webPageWebsitesCount = document.querySelectorAll('[data-automation-id="website"]').length || 0;
         let websitesCountDifference = totalWebsitesCount - webPageWebsitesCount;
-        adjustContentCount(websitesCountDifference, 'websiteSection')
+
+        adjustContentCount(websitesCountDifference, 'websiteSection');
+
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(totalWebsitesCount);
-          }, 2000)
+          }, 2000);
         });
       })
       .catch((error) => {
@@ -388,27 +416,44 @@
         return 0;
       })
       .then((count) => {
-        chrome.storage.local.get('websites')
+        return chrome.storage.local.get('websites')
           .then((result) => {
             console.log("Array of websites:", result.websites);
             populateWebsiteExperience(count, result.websites);
           })
           .catch((error) => {
             console.error('Error occurred while retrieving websites:', error);
-            populateWebsiteExperience(count, []); // Continue with an empty array if an error occurs
+            populateWebsiteExperience(count, []);
           });
-      })
-      .catch((error) => {
-        console.error('Error occurred while populating websites:', error);
       })
       .then(() => {
         return new Promise((resolve) => {
           setTimeout(() => {
             console.log('Finished websiteContainer');
             resolve();
-          }, 500)
-        })
+          }, 500);
+        });
       })
+      // .then(() => {
+      //   let continueElement = document.querySelector('[data-automation-id="bottom-navigation-next-button"]');
+      //   if (continueElement) {
+      //     continueElement.click();
+      //   } else {
+      //     console.warn('Continue button not found');
+      //   }
+      // })
+      .catch((error) => {
+        console.error('Error occurred in websitesContainer:', error);
+      });
+  }
+
+  let focusOnInputs = (array) => {
+    for (let i = 0; i < array.length; i++) {
+      setTimeout(() => {
+        console.log(array[i]);
+        array[i].focus();
+      }, 100)
+    }
   }
 
   let populateMyExperience = async () => {
@@ -424,11 +469,18 @@
     //     })
     //   })
     // })
-
-    // await workExperienceContainer();
-    // await educationContainer();
+    await workExperienceContainer();
+    await educationContainer();
     await languageContainer();
-    // await websitesContainer();
+    await websitesContainer();
+
+    let continueElement = document.querySelector('[data-automation-id="bottom-navigation-next-button"]');
+    continueElement.addEventListener('click', () => {
+      setTimeout(() => {
+        focusOnInputs(elementsToFocus);
+        continueElement.click();
+      }, 300)
+    })
 
   }
 

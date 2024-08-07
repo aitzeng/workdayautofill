@@ -144,7 +144,7 @@
       .then(() => {
         let element = document.querySelector('[data-automation-id="bottom-navigation-next-button"]');
         element.addEventListener('click', (event) => { //This event listener will retrace over all text inputs and update their value in DOM
-          setTimeout((resolve) => {
+          setTimeout(() => {
             document.querySelector('[data-automation-id="legalNameSection_firstName"]').focus();
             document.querySelector('[data-automation-id="legalNameSection_lastName"]').focus();
             document.querySelector('[data-automation-id="addressSection_addressLine1"]').focus();
