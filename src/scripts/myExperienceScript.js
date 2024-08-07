@@ -66,21 +66,6 @@
     return matrix[b.length][a.length];
   }
 
-  let findMostSimilarString = (sample, array) => {
-    let closestString = array[0];
-    let closestDistance = levenshteinDistance(sample, closestString);
-
-    for (let i = 1; i < array.length; i++) {
-      const currentDistance = levenshteinDistance(sample, array[i]);
-      if (currentDistance < closestDistance) {
-        closestDistance = currentDistance;
-        closestString = array[i];
-      }
-    }
-
-    return closestString;
-  }
-
   let adjustContentCount = (number, section) => {
     const event = new Event('contentAdjusted');
     if (number > 0) {
@@ -499,30 +484,26 @@
   }
 
   let populateMyExperience = async () => {
-    // chrome.storage.local.get("jobs") // Checking to see the arrays
-    // .then((result) => {
-    //   console.log("This is jobs:", result.jobs);
-    //   chrome.storage.local.get("education")
-    //   .then((result) => {
-    //     console.log('This is education:', result.education);
-    //     chrome.storage.local.get("languages")
-    //     .then((result) => {
-    //       console.log("this is languages:", result.languages)
-    //     })
-    //   })
-    // })
-    // await workExperienceContainer();
-    await educationContainer();
-    // await languageContainer();
-    // await websitesContainer();
 
-    // let continueElement = document.querySelector('[data-automation-id="bottom-navigation-next-button"]');
-    // const continueListenHandler = (event) => {
-    //   focusOnInputs(elementsToFocus);
-    //   continueElement.click();
-    //   continueElement.removeEventListener('click', continueListenHandler)
-    // }
-    // continueElement.addEventListener('click', continueListenHandler);
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        console.log('Starting up!')
+        resolve();
+      }, 3000)
+    })
+
+    await workExperienceContainer();
+    await educationContainer();
+    await languageContainer();
+    await websitesContainer();
+
+    let continueElement = document.querySelector('[data-automation-id="bottom-navigation-next-button"]');
+    const continueListenHandler = (event) => {
+      focusOnInputs(elementsToFocus);
+      continueElement.click();
+      continueElement.removeEventListener('click', continueListenHandler)
+    }
+    continueElement.addEventListener('click', continueListenHandler);
 
   }
 

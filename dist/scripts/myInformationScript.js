@@ -1,6 +1,35 @@
 /*global chrome*/
 (function () {
 
+  let levenshteinDistance = (a, b) => {
+    const matrix = [];
+
+    // Initialize the first row and column of the matrix
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+
+    // Calculate distances
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // Substitution
+            matrix[i][j - 1] + 1,     // Insertion
+            matrix[i - 1][j] + 1      // Deletion
+          );
+        }
+      }
+    }
+
+    return matrix[b.length][a.length];
+  }
+
   let selectDropDown = (desiredString, id) => {
     const dropdownButton = document.querySelector(`[data-automation-id="${id}"]`)
     dropdownButton.click();
@@ -8,13 +37,40 @@
     return new Promise((resolve) => {
       setTimeout(() => {
         const options = document.querySelectorAll('[role="option"]');
-        options.forEach(option => {
-          if (option.textContent.trim() === desiredString) {
+        console.log('These are all the options after searching:', options);
+        let foundOption = false;
+        let closestOption = null;
+        let closestDistance = Infinity;
+
+        options.forEach((option) => {
+          const optionText = option.textContent.trim();
+
+          if (optionText === desiredString) {
+            foundOption = true;
             option.click();
+            resolve();
+            return;
+          } else {
+            const distance = levenshteinDistance(desiredString, optionText);
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestOption = option;
+            }
+          }
+        });
+        if (!foundOption && closestOption) {
+          console.log('This is the option that matches closest:', closestOption)
+          const inputElement = closestOption.querySelector('input');
+          if (inputElement) {
+            inputElement.click();
           }
           resolve();
-        })
-      }, 500)
+        } else if (!foundOption) {
+          dropdownButton.click(); // Click out the dropdown
+          dropdownButton.click(); // Close the dropdown
+          resolve();
+        }
+      }, 500);
     })
   }
 
