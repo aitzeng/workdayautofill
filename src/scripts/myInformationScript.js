@@ -142,8 +142,8 @@
         return result;
       })
       .then(() => {
-        let element = document.querySelector('[data-automation-id="bottom-navigation-next-button"]');
-        element.addEventListener('click', (event) => { //This event listener will retrace over all text inputs and update their value in DOM
+        let continueElement = document.querySelector('[data-automation-id="bottom-navigation-next-button"]');
+        const continueListenHandler = (event) => {
           setTimeout(() => {
             document.querySelector('[data-automation-id="legalNameSection_firstName"]').focus();
             document.querySelector('[data-automation-id="legalNameSection_lastName"]').focus();
@@ -152,8 +152,11 @@
             document.querySelector('[data-automation-id="addressSection_postalCode"]').focus();
             document.querySelector('[data-automation-id="phone-number"]').focus();
             document.querySelector('[data-automation-id="bottom-navigation-next-button"]').click(); //After refocusing, automatically clicks the 'Save and Continue' button
+
+            continueElement.removeEventListener('click', continueListenHandler)
           }, 100)
-        })
+        }
+        continueElement.addEventListener('click', continueListenHandler)
       })
   }
 

@@ -357,7 +357,7 @@ function MyExperience({ getCurrentTabId }) {
         <div key={index}>
           <div className="work-experience-title">School/Univeristy #{index + 1}</div>
           <div>School Name</div>
-          <input type="text" value={school.school} onChange={(e) => {
+          <input placeholder="Type the full name of your school" type="text" value={school.school} onChange={(e) => {
             handleEducationInputChange(index, 'school', e.target.value)
           }} />
           <div>Degree</div>

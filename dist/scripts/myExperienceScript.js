@@ -85,7 +85,7 @@
     const event = new Event('contentAdjusted');
     if (number > 0) {
       let element = document.querySelector(`[data-automation-id="${section}"] [data-automation-id="Add"]`) || document.querySelector(`[data-automation-id="${section}"] [data-automation-id="Add Another"]`);
-      console.log('Add button to be clicked:', element);
+      // console.log('Add button to be clicked:', element);
       for (let i = 0; i < number; i++) {
         setTimeout(() => { // Not sure exactly why, but this setTimeout with not time delay helps find the element a lot easier and click it
           element.click();
@@ -160,7 +160,7 @@
         let closestOption = null;
         let closestDistance = Infinity;
 
-        options.forEach(option => {
+        options.forEach((option) => {
           const optionText = option.textContent.trim();
 
           if (optionText === desiredString) {
@@ -197,13 +197,55 @@
       } else {
         let element = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="multiselectInputContainer"]`)
         element.click();
-        setTimeout(() => {
-          let searchElement = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="searchBox"]`);
-          console.log(searchElement);
-          searchElement.value = array[i].school;
-          elementsToFocus.push(searchElement);
-          mimicEnter(searchElement);
-        }, 1000);
+        await new Promise((resolve) => setTimeout(resolve, 500)) // Let DOM populate with dropdown
+
+        let searchElement = document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="searchBox"]`);
+        // console.log(searchElement);
+        searchElement.value = array[i].school;
+        elementsToFocus.push(searchElement);
+        mimicEnter(searchElement);
+
+        await new Promise((resolve) => {
+          setTimeout(() => {
+            const options = document.querySelectorAll('[role="option"]');
+            console.log('These are all the options after searching:', options);
+            let foundOption = false;
+            let closestOption = null;
+            let closestDistance = Infinity;
+
+            options.forEach((option) => {
+              const optionText = option.textContent.trim();
+              const inputElement = option.querySelector('input');
+
+              if (optionText === array[i].school) {
+                foundOption = true;
+                console.log('This is the option that matches exactly:', option )
+                inputElement.click();
+                resolve();
+                return;
+              } else {
+                const distance = levenshteinDistance(array[i].school, optionText);
+                if (distance < closestDistance) {
+                  closestDistance = distance;
+                  closestOption = option;
+                }
+              }
+            });
+            if (!foundOption && closestOption) {
+              console.log('This is the option that matches closest:', closestOption )
+              const inputElement = closestOption.querySelector('input');
+              if (inputElement) {
+                inputElement.click();
+              }
+              resolve();
+            } else if (!foundOption) {
+              let closeElement = document.querySelector('[data-automation-id="clearSearchButton"]')
+              console.log('closeElement is present:', closeElement);
+              closeElement.click();
+              resolve();
+            }
+          }, 500);
+        })
       }
       await selectDropDown(array[i].degree, document.querySelector(`[data-automation-id="education-${i + 1}"] [data-automation-id="degree"]`));
     }
@@ -469,18 +511,18 @@
     //     })
     //   })
     // })
-    await workExperienceContainer();
+    // await workExperienceContainer();
     await educationContainer();
-    await languageContainer();
-    await websitesContainer();
+    // await languageContainer();
+    // await websitesContainer();
 
-    let continueElement = document.querySelector('[data-automation-id="bottom-navigation-next-button"]');
-    continueElement.addEventListener('click', () => {
-      setTimeout(() => {
-        focusOnInputs(elementsToFocus);
-        continueElement.click();
-      }, 300)
-    })
+    // let continueElement = document.querySelector('[data-automation-id="bottom-navigation-next-button"]');
+    // const continueListenHandler = (event) => {
+    //   focusOnInputs(elementsToFocus);
+    //   continueElement.click();
+    //   continueElement.removeEventListener('click', continueListenHandler)
+    // }
+    // continueElement.addEventListener('click', continueListenHandler);
 
   }
 
