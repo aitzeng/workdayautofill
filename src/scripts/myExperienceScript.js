@@ -107,9 +107,19 @@
 
       elementsToFocus.push(jobTitleElement, companyElement, locationElement, startDateMonthElement, startDateYearElement);
 
-      if (array[i].current) {
+      if (array[i].current) { // Current job
+        let currentButton = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="currentlyWorkHere"]`);
+        let endDateInput = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-endDate"]`);
+        if (endDateInput) { // Check if End Date form is present
+          currentButton.click(); // If it is, click button to make it disappear
+        }
         document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="currentlyWorkHere"]`).click();
-      } else {
+      } else { // Not current job
+        let endDateInput = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-endDate"]`);
+        let currentButton = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="currentlyWorkHere"]`);
+        if (!endDateInput) { // End date form is not present
+          currentButton.click(); // Click button to mkae it appear
+        }
         let endDateMonthElement = document.querySelector(`[data-automation-id="workExperience-${i + 1}"] [data-automation-id="formField-endDate"] [data-automation-id="dateSectionMonth-input"]`)
         endDateMonthElement.value = array[i].endDateMonth;
         endDateMonthElement.dispatchEvent(event);
@@ -489,7 +499,7 @@
       setTimeout(() => {
         console.log('Starting up!')
         resolve();
-      }, 3000)
+      }, 2000)
     })
 
     await workExperienceContainer();

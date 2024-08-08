@@ -15,6 +15,9 @@ const Layout = () => {
           <div>
             <Link to="/MyExperience">My Experience</Link>
           </div>
+          <div>
+            <Link to="/Identity">Identity</Link>
+          </div>
         </div>
       </nav>
 

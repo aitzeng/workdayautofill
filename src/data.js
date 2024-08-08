@@ -335,3 +335,9 @@ export const languageList = [
 ];
 
 export const languageLevels = ["Beginner", "Intermediate", "Advanced"]
+
+export const raceList = [ "American Indian or Alaska Native", "Asian", "Black or African American", "I do not wish to provide", "Native Hawaiian or Other Pacific Islander", "Two or More Races", "White"];
+
+export const genderList = ["Male", "Female", "I do not wish to provide", "Non-binary/Third Gender", "Prefer not to answer", "Not Listed"];
+
+export const veteranList = ["I am not a veteran", "I do not wish to provide", "I identify as a veteran", "I am an Active Duty" ]

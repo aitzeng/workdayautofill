@@ -4,6 +4,7 @@ import Login from './pages/Login.jsx';
 import Layout from './pages/Layout.jsx';
 import MyInfo from './pages/MyInfo.jsx';
 import MyExperience from './pages/MyExperience.jsx';
+import Identity from './pages/Identity.jsx';
 import { HashRouter, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
           <Route index element={<Login getCurrentTabId={getCurrentTabId}/>} />
           <Route path="MyInfo" element={<MyInfo getCurrentTabId={getCurrentTabId}/>} />
           <Route path="MyExperience" element={<MyExperience getCurrentTabId={getCurrentTabId}/>} />
+          <Route path="Identity" element={<Identity getCurrentTabId={getCurrentTabId}/>} />
         </Route>
       </Routes>
     </HashRouter>
