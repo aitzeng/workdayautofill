@@ -28,7 +28,7 @@
     return matrix[b.length][a.length];
   }
 
-  let selectDropDown = (desiredString, element, roleName) => {
+  let selectDropDown = (desiredString, element, roleName, label) => {
     if (!element) {
       console.error('Dropdown not found');
       return Promise.reject(new Error('Dropdown not found'));
@@ -60,7 +60,11 @@
           if (optionText === desiredString) {
             foundOption = true;
             console.log('Found Option!', option);
-            option.click();
+            if (label) {
+              option.querySelector('label').click();
+            } else {
+              option.click();
+            }
             resolve();
           } else {
             // console.log('desiredString:', desiredString);
@@ -75,67 +79,15 @@
 
         if (!foundOption && closestOption) {
           console.log('This is closest option:', closestOption);
-          closestOption.click();
+          if (label) {
+            closestOption.querySelector('label').click();
+          } else {
+            closestOption.click();
+          }
           resolve();
         } else if (!foundOption) {
           element.click(); // Click out of the dropdown
           element.click(); // Closes the dropdown
-          reject(new Error(`Option not found`));
-        }
-      }, 500)
-    })
-  }
-
-  let selectPrompt = (desiredString, element, roleName) => {
-    if (!element) {
-      console.error('Dropdown not found');
-      return Promise.reject(new Error('Dropdown not found'));
-    }
-
-    try {
-      element.click();
-    } catch (error) {
-      console.error('Failed to click dropdown:', error);
-      return Promise.reject(new Error('Failed to click dropdown'));
-    }
-
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const options = document.querySelectorAll(`[role="${roleName}"]`);
-        // console.log('These are all options:', options);
-        let foundOption = false;
-        let closestOption = null;
-        let closestDistance = Infinity;
-
-        options.forEach((option, index) => {
-          // console.log('These are all options:', options);
-          const optionText = option.textContent.trim().replace(' (United States of America)', '');
-
-          if (optionText === 'select one') {
-            return;
-          }
-
-          if (optionText === desiredString) {
-            foundOption = true;
-            // console.log('Found Option!', option);
-            option.querySelector('label').click();
-            resolve();
-          } else {
-            // console.log('desiredString:', desiredString);
-            const distance = levenshteinDistance(desiredString, optionText);
-            // console.log('optionText and distance:', optionText, distance);
-            if (distance < closestDistance) {
-              closestDistance = distance;
-              closestOption = option;
-            }
-          }
-        });
-
-        if (!foundOption && closestOption) {
-          // console.log('This is closest option:', closestOption);
-          closestOption.querySelector('label').click();
-          resolve();
-        } else if (!foundOption) {
           reject(new Error(`Option not found`));
         }
       }, 500)
@@ -160,10 +112,10 @@
         let raceString = result.voluntaryIdentity.race
         if (document.querySelector('[data-automation-id="ethnicityDropdown"]')) { //Check if race is dropdown
           let raceElement = document.querySelector('[data-automation-id="ethnicityDropdown"]')
-          selectDropDown(raceString, raceElement, 'option');
+          selectDropDown(raceString, raceElement, 'option', false);
         } else { // Check if race is prompt
           let raceElement = document.querySelector('[data-automation-id="ethnicityPrompt"]');
-          selectPrompt(raceString, raceElement, 'row');
+          selectDropDown(raceString, raceElement, 'row', true);
         }
         return new Promise((resolve) => {
           setTimeout(() => {
