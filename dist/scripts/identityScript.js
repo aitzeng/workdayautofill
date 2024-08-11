@@ -96,18 +96,18 @@
 
   let populateIdentity = async () => {
     chrome.storage.local.get('voluntaryIdentity')
-      // .then((result) => {
-      //   let identityInformation = result.voluntaryIdentity;
-      //   // console.log('This is result of voluntaryIdentity:', result.voluntaryIdentity);
-      //   let hispanicLatinoElement = document.querySelector('[data-automation-id="hispanicOrLatino"]');
-      //   selectDropDown(identityInformation.hispanicLatino, hispanicLatinoElement, 'option')
+      .then((result) => {
+        let identityInformation = result.voluntaryIdentity;
+        // console.log('This is result of voluntaryIdentity:', result.voluntaryIdentity);
+        let hispanicLatinoElement = document.querySelector('[data-automation-id="hispanicOrLatino"]');
+        selectDropDown(identityInformation.hispanicLatino, hispanicLatinoElement, 'option', false)
 
-      //   return new Promise((resolve) => { // Gives time to add/delete jobs
-      //     setTimeout(() => {
-      //       resolve(result);
-      //     }, 1500);
-      //   });
-      // })
+        return new Promise((resolve) => { // Gives time to add/delete jobs
+          setTimeout(() => {
+            resolve(result);
+          }, 1000);
+        });
+      })
       .then((result) => {
         let raceString = result.voluntaryIdentity.race
         if (document.querySelector('[data-automation-id="ethnicityDropdown"]')) { //Check if race is dropdown
@@ -120,8 +120,18 @@
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(result)
-          }, 1500)
+          }, 1000)
         });
+      })
+      .then((result) => {
+        let veteranString = result.voluntaryIdentity.veteranStatus;
+        let veteranElement = document.querySelector('[data-automation-id="veteranStatus"]');
+        selectDropDown(veteranString, veteranElement, 'option', false);
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(result)
+          }, 1000)
+        })
       })
   }
 
