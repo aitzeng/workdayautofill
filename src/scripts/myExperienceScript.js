@@ -40,7 +40,6 @@
   let levenshteinDistance = (a, b) => {
     const matrix = [];
 
-    // Initialize the first row and column of the matrix
     for (let i = 0; i <= b.length; i++) {
       matrix[i] = [i];
     }
@@ -48,7 +47,6 @@
       matrix[0][j] = j;
     }
 
-    // Calculate distances
     for (let i = 1; i <= b.length; i++) {
       for (let j = 1; j <= a.length; j++) {
         if (b.charAt(i - 1) === a.charAt(j - 1)) {
@@ -157,6 +155,10 @@
 
         options.forEach((option) => {
           const optionText = option.textContent.trim();
+
+          if (optionText === 'select one') {
+            return;
+          }
 
           if (optionText === desiredString) {
             foundOption = true;
